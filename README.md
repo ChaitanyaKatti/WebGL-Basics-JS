@@ -21,7 +21,7 @@ Simple scene with cubes. The cubes are rotating around their own axis. The camer
 ### Planets
 <img src="src/assets/images/misc/planets.png" alt="Planets" width="400"/>
 
-Simple scene Earth and Sun and moon (not to scale). The camera has both orbit and FPV controls. The planets are shaded with 8K textures and Phong shading(no shadows). Textures are from [Solar System Scope](https://www.solarsystemscope.com/textures/).
+Simple scene Earth and Sun and moon (not to scale). The camera has both orbit and FPV controls. The planets are shaded with 8K textures and Phong shading(no shadows). Textures are from [Solar System Scope](https://www.solarsystemscope.com/textures/). Also the sun does not emit light, yet :), it is rather lit by a point light.
 
 ### Cornell Box
 <img src="src/assets/images/misc/box.png" alt="Cornell Box" width="400"/>
