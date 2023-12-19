@@ -28,7 +28,6 @@ const boxMesh = new Box(GL, 1, 1, 1);
 const defaultTexture = new Texture(GL, 0);
 const boxTexture = new Texture(GL, 0, './assets/images/textures/cornellBox.jpg');
 
-
 // Variables for mouse movement
 let mousePos = [0, 0]; // Mouse position in normalized device coordinates, from -1 to +1
 let activeKeys = {};
@@ -36,37 +35,29 @@ let lastFrameTime = performance.now();
 let FPS = 60;
 let frameCount = 0; // Frame count for time uniform
 
-// Variables for UI sliders
-var variables = { // This dictionary object will be automaitcally updated by the UI
-    // variableName: [value, min, max, step]
-    FOV: [60, 0, 180, 1],
-    contrast: [1, 0, 2, 0.1],
-    time: [0, 0, 6.3, 0.01],
-    sphereY: [-0.5, -1, 1, 0.1],
-    sphereRadius: [0.5, 0.0001, 1, 0.01],
-};
 // Create UI
 const ui = new UI();
-ui.addSliders(variables);
-ui.addCheckbox('orbitalCam', myCamera.orbitCam);
+ui.addSlider('FOV', 60, 0, 180, 1);
+ui.addSlider('time', 0, 0, 6.3, 0.01);
+ui.addSlider('sphereY', -0.5, -1, 1, 0.1);
+ui.addSlider('sphereRadius', 0.5, 0.0001, 1, 0.01);
 ui.addColorPicker('ambient', [0.0, 0.0, 0.0]);
 ui.addColorPicker('diffuse', [1.0, 1.0, 1.0]);
 ui.addColorPicker('specular', [1.0, 1.0, 1.0]);
 ui.addColorPicker('lightColor', [1.0, 1.0, 1.0]);
-
+ui.addCheckbox('orbitalCam', myCamera.orbitCam);
 ui.elements['orbitalCam'].input.addEventListener('change', () => {
     console.log("Toggling Camera Mode");
     myCamera.toggleOrbitCam();
 });
-
 ui.addFPSCounter();
-
 ui.rack.addEventListener('mouseover', (event) => {
     document.removeEventListener('wheel', myCamera.wheelCameraListener);
 });
 ui.rack.addEventListener('mouseout', (event) => {
     document.addEventListener('wheel', myCamera.wheelCameraListener);
 });
+
 // Prevent the user from leaving the page
 window.addEventListener('beforeunload', function (e) {
     // e.preventDefault();
@@ -183,8 +174,8 @@ function drawFrame(shader) {
 
     // Sphere
     defaultTexture.bind();
-    modelMatrix = mat4.scale(variables.sphereRadius[0]);
-    modelMatrix = mat4.multiplyMat(mat4.translate(0.4, variables.sphereY[0], 0.1), modelMatrix);
+    modelMatrix = mat4.scale(ui.variables.sphereRadius);
+    modelMatrix = mat4.multiplyMat(mat4.translate(0.4, ui.variables.sphereY, 0.1), modelMatrix);
     shader.setUniform('uModelMatrix', modelMatrix, 'mat4');
     shader.setUniform('uNormalMatrix', mat3.modelToNormal(modelMatrix), 'mat3');
     shader.setUniform('receiveShadow', false, 'bool')
@@ -219,12 +210,12 @@ function renderLoop(shader) {
 
     // Update camera
     myCamera.update(mousePos, activeKeys);
-    myCamera.fov = variables.FOV[0] * Math.PI / 180;
+    myCamera.fov = ui.variables.FOV * Math.PI / 180;
 
     shader.use(); // Use the shader program
     // Set uniforms for time and aspect ratio
     shader.setUniform('uFrameCount', frameCount, 'uint');
-    shader.setUniform('uTime', variables.time[0], 'float');
+    shader.setUniform('uTime', ui.variables.time, 'float');
     shader.setUniform('uAspect', window.innerWidth / window.innerHeight, 'float');
     shader.setUniform('uResolution', [window.innerWidth, window.innerHeight], 'vec2')
     shader.setUniform('uMousePos', mousePos, 'vec2');
@@ -234,11 +225,11 @@ function renderLoop(shader) {
     shader.setUniform('uProjectionMatrix', myCamera.projectionMatrix, 'mat4');
     // Set the uniforms for the sphere and light
     const sphereData = {
-        center: { value: [0.4, variables.sphereY[0], 0.1], type: 'vec3' },
-        radius: { value: variables.sphereRadius[0], type: 'float' }
+        center: { value: [0.4, ui.variables.sphereY, 0.1], type: 'vec3' },
+        radius: { value: ui.variables.sphereRadius, type: 'float' }
     }
     const ligtData = {
-        position: { value: [0.9 * Math.cos(variables.time[0]), 0.9, 0.9 * Math.sin(variables.time[0])], type: 'vec3' },
+        position: { value: [0.9 * Math.cos(ui.variables.time), 0.9, 0.9 * Math.sin(ui.variables.time)], type: 'vec3' },
         color: { value: ui.variables.lightColor, type: 'vec3' },
         intensity: { value: 1.0, type: 'float' }
     }

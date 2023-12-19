@@ -36,33 +36,32 @@ export class UI {
         // });
     }
 
-    uiMouseClick(event) {
-        // https://stackoverflow.com/questions/3234256/find-mouse-position-relative-to-element
-        let rect = event.target.getBoundingClientRect();
-        let x = event.clientX - rect.left; //x position within the element.
-        let y = event.clientY - rect.top;  //y position within the element.
-        // if (y < 10) {
-        this.clicked = true;
-        // }
-    }
+    // uiMouseClick(event) {
+    //     let rect = event.target.getBoundingClientRect();
+    //     let x = event.clientX - rect.left; //x position within the element.
+    //     let y = event.clientY - rect.top;  //y position within the element.
+    //     // if (y < 10) {
+    //     this.clicked = true;
+    //     // }
+    // }
 
-    uiDrag(event) {
-        if (this.clicked) {
-            this.rack.style.top = event.clientY - 10 + 'px';
-            this.rack.style.left = event.clientX - 200 + 'px';
-        }
-    }
+    // uiDrag(event) {
+    //     if (this.clicked) {
+    //         this.rack.style.top = event.clientY - 10 + 'px';
+    //         this.rack.style.left = event.clientX - 200 + 'px';
+    //     }
+    // }
 
-    addSliders(map) {
-        this.variables = map; // Keep a reference to the variables dictionary
-        for (let key in map) {
-            const params = map[key]; // list of [value, min, max, step]
-            this.#addSlider(key, params[0], params[1], params[2], params[3]);
-        }
-    }
+    // addSliders(map) {
+    //     // this.variables = map; // Keep a reference to the variables dictionary
+    //     for (let key in map) {
+    //         const params = map[key]; // list of [value, min, max, step]
+    //         this.addSlider(key, params[0], params[1], params[2], params[3]);
+    //     }
+    // }
 
-    #addSlider(variableName, value, min, max, step) {
-        // this.variables[variableName] = value;
+    addSlider(variableName, value, min, max, step) {
+        this.variables[variableName] = value;
 
         // Title
         let titleDiv = document.createElement('div');
@@ -94,7 +93,7 @@ export class UI {
 
         // Add event listener to update output text
         input.addEventListener('input', () => {
-            this.variables[variableName][0] = Number(input.value);
+            this.variables[variableName] = Number(input.value);
             output.innerHTML = Number(input.value).toFixed(1);
         });
 

@@ -19,7 +19,7 @@ const myShader = new Shader(GL, './shaders/phong.vert',
     './shaders/phong.frag');
 
 // Create mesh
-const sphereMesh = new Sphere(GL, 50, 50);// './assets/models/ball.obj');
+const sphereMesh = new Sphere(GL, 30, 30);// './assets/models/ball.obj');
 const planeMesh = new Plane(GL, 1, 1);//, './assets/models/plane.obj');
 
 // Create textures
@@ -36,16 +36,11 @@ let lastFrameTime = performance.now();
 let FPS = 60;
 let frameCount = 0; // Frame count for time uniform
 
-// Variables for UI sliders
-var sliderVariables = { // This dictionary object will be automaitcally updated by the UI
-    // variableName: [value, min, max, step]
-    FOV: [60, 0, 180, 1],
-    timeDialation: [1, 0, 2, 0.01]
-};
-
 // Create UI
 const ui = new UI();
-ui.addSliders(sliderVariables);
+// params(variableName, initial_value, min, max, step)
+ui.addSlider('FOV', 60, 0, 180, 1);
+ui.addSlider('timeDialation', 1, 0, 2, 0.01);
 ui.addCheckbox('orbitalCam', myCamera.orbitCam);
 ui.elements['orbitalCam'].input.addEventListener('change', () => {
     console.log("Toggling Camera Mode");
@@ -157,7 +152,6 @@ function setupPointerLock(canvas) {
 // Draw a single frame
 function drawFrame(shader) {
     // Clear the canvas
-    // GL.clearColor(0, 0, 0, 1.0);
     GL.clearColor(0.2, 0.5, 0.3, 1.0);
     GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
 
@@ -185,9 +179,9 @@ function drawFrame(shader) {
     // Earth
     earthTexture.bind();
     modelMatrix = mat4.scale(0.5, 0.5, 0.5);
-    modelMatrix = mat4.multiplyMat(mat4.rotateY(sliderVariables.timeDialation[0] * performance.now() / (1000)), modelMatrix);
+    modelMatrix = mat4.multiplyMat(mat4.rotateY(ui.variables.timeDialation * performance.now() / (1000)), modelMatrix);
     modelMatrix = mat4.multiplyMat(mat4.translate(0, 0, 5), modelMatrix);
-    modelMatrix = mat4.multiplyMat(mat4.rotateY(sliderVariables.timeDialation[0] * performance.now() / (365.25 * 1000)), modelMatrix);
+    modelMatrix = mat4.multiplyMat(mat4.rotateY(ui.variables.timeDialation * performance.now() / (365.25 * 1000)), modelMatrix);
     shader.setUniform('uModelMatrix', modelMatrix, 'mat4');
     shader.setUniform('uNormalMatrix', mat3.modelToNormal(modelMatrix), 'mat3');
     sphereMesh.draw();
@@ -195,9 +189,9 @@ function drawFrame(shader) {
     // Moon
     moonTexture.bind();
     modelMatrix = mat4.scale(0.2, 0.2, 0.2);
-    modelMatrix = mat4.multiplyMat(mat4.rotateY(sliderVariables.timeDialation[0] * performance.now() / (1000)), modelMatrix);
+    modelMatrix = mat4.multiplyMat(mat4.rotateY(ui.variables.timeDialation * performance.now() / (1000)), modelMatrix);
     modelMatrix = mat4.multiplyMat(mat4.translate(0, 0, 5), modelMatrix);
-    modelMatrix = mat4.multiplyMat(mat4.rotateY(sliderVariables.timeDialation[0] * performance.now() / (365.25 * 1000)), modelMatrix);
+    modelMatrix = mat4.multiplyMat(mat4.rotateY(ui.variables.timeDialation * performance.now() / (365.25 * 1000)), modelMatrix);
     const d = mat4.multiplyVec(modelMatrix, [0, 0, 4, 0]);
     modelMatrix = mat4.multiplyMat(mat4.translate(d[0], d[1], d[2]), modelMatrix);
     // modelMatrix = mat4.multiplyMat(mat4.rotateY(Math.PI), modelMatrix);
@@ -224,13 +218,13 @@ function renderLoop(shader) {
 
     // Update camera
     myCamera.update(mousePos, activeKeys);
-    myCamera.fov = sliderVariables.FOV[0] * Math.PI / 180;
+    myCamera.fov = ui.variables.FOV * Math.PI / 180;
 
     shader.use(); // Use the shader program
 
     // Set uniforms for time and aspect ratio
     shader.setUniform('uFrameCount', frameCount, 'uint');
-    shader.setUniform('uTime', sliderVariables.timeDialation[0] * performance.now() / 1000, 'float');
+    shader.setUniform('uTime', ui.variables.timeDialation * performance.now() / 1000, 'float');
     shader.setUniform('uAspect', window.innerWidth / window.innerHeight, 'float');
     shader.setUniform('uResolution', [window.innerWidth, window.innerHeight], 'vec2')
     shader.setUniform('uMousePos', mousePos, 'vec2');
