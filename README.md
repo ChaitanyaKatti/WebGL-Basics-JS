@@ -14,7 +14,7 @@ My implementation of basic WebGL techniques using vanilla **JavaScrpit**. No **N
 ## Examples
 ### Cubes
 
-<img src="src/assets/images/misc/cubes.png" alt="Cubes" width="400"/>
+<img src="src/assets/images/misc/cubes.png" alt="Cubes" width="200"/>
 
 Simple scene with cubes. The cubes are rotating around their own axis. The camera enabled with orbit controls around the Y axis. The cubes are shaded with UV coordinates.
 
