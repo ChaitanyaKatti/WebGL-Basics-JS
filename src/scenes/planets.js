@@ -16,10 +16,10 @@ const myCamera = new Camera(60 * Math.PI / 180, window.innerWidth / window.inner
 
 // Create shader program
 const myShader = new Shader(GL, './shaders/phong.vert',
-                                './shaders/phong.frag');
+    './shaders/phong.frag');
 
 // Create mesh
-const sphereMesh = new Sphere(GL, 50,50);// './assets/models/ball.obj');
+const sphereMesh = new Sphere(GL, 50, 50);// './assets/models/ball.obj');
 const planeMesh = new Plane(GL, 1, 1);//, './assets/models/plane.obj');
 
 // Create textures

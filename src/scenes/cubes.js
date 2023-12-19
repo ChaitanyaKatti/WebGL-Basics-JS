@@ -57,17 +57,17 @@ function drawScene(gl, shader, vertexBuffer, indexBuffer, frameCount) {
     // Set the uniforms for the matrices
     shader.setUniform('uViewMatrix', viewMatrix, 'mat4');
     shader.setUniform('uProjectionMatrix', projectionMatrix, 'mat4');
-    
+
     for (let i = 0; i < 20; i++) {
         var modelMatrix = mat4.scale(0.5, 0.5, 0.5);
-        modelMatrix = mat4.multiply(mat4.rotateX(performance.now() / 1000 + i * Math.PI / 2), modelMatrix);
-        modelMatrix = mat4.multiply(mat4.rotateY(performance.now() / 1000 + i * Math.PI / 2), modelMatrix);
-        modelMatrix = mat4.multiply(mat4.translate(5 * Math.sin(i*Math.PI/10), 5 * Math.cos(i*Math.PI/5), 5 * Math.cos(i*Math.PI/10)), modelMatrix);
+        modelMatrix = mat4.multiplyMat(mat4.rotateX(performance.now() / 1000 + i * Math.PI / 2), modelMatrix);
+        modelMatrix = mat4.multiplyMat(mat4.rotateY(performance.now() / 1000 + i * Math.PI / 2), modelMatrix);
+        modelMatrix = mat4.multiplyMat(mat4.translate(5 * Math.sin(i * Math.PI / 10), 5 * Math.cos(i * Math.PI / 5), 5 * Math.cos(i * Math.PI / 10)), modelMatrix);
         shader.setUniform('uModelMatrix', modelMatrix, 'mat4');
         // Draw the triangle
         gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
     }
-    
+
     gl.flush(); // Flush the buffer
 }
 

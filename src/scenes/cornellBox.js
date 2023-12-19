@@ -60,30 +60,6 @@ ui.elements['orbitalCam'].input.addEventListener('change', () => {
 });
 
 ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
-ui.addFPSCounter();
 
 ui.rack.addEventListener('mouseover', (event) => {
     document.removeEventListener('wheel', myCamera.wheelCameraListener);
@@ -216,9 +192,9 @@ function drawFrame(shader) {
 
     // Box
     defaultTexture.bind();
-    modelMatrix = mat4.scale(0.5, 1.0, 0.5);
-    modelMatrix = mat4.multiplyMat(mat4.rotateY(Math.PI/6.0), modelMatrix);
-    modelMatrix = mat4.multiplyMat(mat4.translate(-0.5, -0.5, -0.5), modelMatrix);
+    modelMatrix = mat4.scale(0.5, 1.2, 0.5);
+    modelMatrix = mat4.multiplyMat(mat4.rotateY(Math.PI / 6.0), modelMatrix);
+    modelMatrix = mat4.multiplyMat(mat4.translate(-0.5, -0.4, -0.5), modelMatrix);
     shader.setUniform('uModelMatrix', modelMatrix, 'mat4');
     shader.setUniform('uNormalMatrix', mat3.modelToNormal(modelMatrix), 'mat3');
     shader.setUniform('receiveShadow', true, 'bool')
