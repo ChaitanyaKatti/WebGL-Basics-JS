@@ -52,14 +52,6 @@ export class UI {
     //     }
     // }
 
-    // addSliders(map) {
-    //     // this.variables = map; // Keep a reference to the variables dictionary
-    //     for (let key in map) {
-    //         const params = map[key]; // list of [value, min, max, step]
-    //         this.addSlider(key, params[0], params[1], params[2], params[3]);
-    //     }
-    // }
-
     addSlider(variableName, value, min, max, step) {
         this.variables[variableName] = value;
 
