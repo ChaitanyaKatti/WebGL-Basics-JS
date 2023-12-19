@@ -3,9 +3,11 @@ My implementation of basic WebGL techniques using vanilla **JavaScrpit**. No **N
 
 ## How to run
 1. Clone the repository
-2. Open the `index.html` file in your browser
-    Change the `src` attribute of the `script` tag to run a different example
-    Options are:
+2. Open the `src/index.html` file in your browser. 
+
+    You Change the `src` attribute of the `script` tag to run a different scenes.
+
+    Available options are:
     - `src="scenes/cubes.js"`
     - `src="scenes/planets.js"`
     - `src="scenes/cornellBox.js"`
