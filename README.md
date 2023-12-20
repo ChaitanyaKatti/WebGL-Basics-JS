@@ -1,4 +1,5 @@
 # WebGL-Basics-JS
+[Live Demo](https://chaitanyakatti.github.io/WebGL-Basics-JS/src/index.html)
 My implementation of basic WebGL techniques using vanilla **JavaScrpit**. No **NodeJS** and no **additional libraries**.
 
 ## How to run
