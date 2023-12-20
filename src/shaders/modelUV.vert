@@ -17,7 +17,7 @@ out vec3 vNormal;
 void main() {
     vPosition = (uModelMatrix * vec4(aPosition, 1.0)).xyz;
     vTexCoord = aTexCoord; // UV coordinates
-    vNormal = uNormalMatrix * aNormal; // Converts to world space, also fixes scaling issues
+    vNormal = normalize(uNormalMatrix * aNormal); // Converts to world space, also fixes scaling issues
 
     gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(aPosition, 1.0);
 }

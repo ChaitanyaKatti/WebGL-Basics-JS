@@ -13,6 +13,6 @@ uniform mat3 uNormalMatrix;
 out vec3 vNormal;
 
 void main() {
-    vNormal = (uViewMatrix * vec4(uNormalMatrix * aNormal, 0.0)).xyz; // 0.0 because we don't want translation
+    vNormal = normalize((uViewMatrix * vec4(uNormalMatrix * aNormal, 0.0)).xyz); // 0.0 because we don't want translation
     gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(aPosition, 1.0);
 }

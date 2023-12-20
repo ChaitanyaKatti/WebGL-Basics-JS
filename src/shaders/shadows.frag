@@ -1,5 +1,5 @@
 #version 300 es
-precision mediump float;
+precision highp float;
 
 #define PI 3.1415926535897932384626433832795
 
@@ -130,8 +130,8 @@ void main() {
     // Intersection
     float occlusion = 0.0;
     if(receiveShadow) {
-        float tSphere = rayIntersetSphere(uSphere, rayOrigin + 0.01 * vNormal, rayDir, ligthDistance);
-        float tBox = rayIntersectBox(uBox, rayOrigin + 0.01 * vNormal, rayDir, ligthDistance);
+        float tSphere = rayIntersetSphere(uSphere, rayOrigin + 0.005 * vNormal, rayDir, ligthDistance);
+        float tBox = rayIntersectBox(uBox, rayOrigin + 0.005 * vNormal, rayDir, ligthDistance);
         if(tSphere > 0.0) {
             occlusion = 0.8;
         } else if(tBox > 0.0) {

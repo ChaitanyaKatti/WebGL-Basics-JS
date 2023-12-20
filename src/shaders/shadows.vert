@@ -1,5 +1,5 @@
 #version 300 es
-precision mediump float;
+precision highp float;
 
 layout(location = 0) in vec3 aPosition;
 layout(location = 1) in vec2 aTexCoord;
@@ -27,7 +27,7 @@ out vec3 vNormal;
 void main() {
     vPosition = (uModelMatrix * vec4(aPosition, 1.0)).xyz; // World space position
     vTexCoord = aTexCoord;
-    vNormal = uNormalMatrix * aNormal; // World space normal
+    vNormal = normalize(uNormalMatrix * aNormal); // World space normal
 
     gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(aPosition, 1.0);
 }
