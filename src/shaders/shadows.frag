@@ -1,5 +1,5 @@
 #version 300 es
-precision highp float;
+precision mediump float;
 
 #define PI 3.1415926535897932384626433832795
 
@@ -22,9 +22,10 @@ struct Box {
 };
 
 struct Material {
+    sampler2D diffuseTexture;
+    sampler2D specularTexture;
+    sampler2D normalTexture;
     vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
     float shininess;
 };
 
@@ -45,8 +46,6 @@ uniform mat4 uProjectionMatrix;
 uniform mat3 uNormalMatrix;
 
 uniform bool receiveShadow;
-uniform sampler2D uColorTexture;
-uniform sampler2D uDepthTexture;
 
 uniform Sphere uSphere;
 uniform Box uBox;
@@ -143,13 +142,13 @@ void main() {
     vec3 normal = normalize(vNormal);
     vec3 lightDir = normalize(uLight.position - vPosition);
     float diff = max(dot(normal, lightDir), 0.0);
-    vec3 diffuse = diff * uLight.color * uMaterial.diffuse;
+    vec3 diffuse = diff * uLight.color * texture(uMaterial.diffuseTexture, vTexCoord).rgb;
 
     // Specular
     vec3 viewDir = normalize(uCameraPos - vPosition);
     vec3 relfectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(relfectDir, viewDir), 0.0), uMaterial.shininess);
-    vec3 specular = spec * uLight.color * uMaterial.specular;
+    vec3 specular = spec * uLight.color * texture(uMaterial.specularTexture, vTexCoord).rgb;
 
     // Final color
     vec3 finalColor = attenuation * (ambient + (1.0 - occlusion) * (diffuse + specular));

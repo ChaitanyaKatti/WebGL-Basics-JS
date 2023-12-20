@@ -25,8 +25,11 @@ const cornellBoxMesh = new CornellBox(GL, 1, 1, 1);
 const boxMesh = new Box(GL, 1, 1, 1);
 
 // Create textures
-const defaultTexture = new Texture(GL, 0);
-const boxTexture = new Texture(GL, 0, './assets/images/textures/cornellBox.jpg');
+const tilesDiffuseTexture = new Texture(GL, 0, './assets/images/textures/tilesDiffuse.jpg');
+const tilesSpecularTexture = new Texture(GL, 1, './assets/images/textures/tilesSpecular.jpg');
+const tilesNormalTexture = new Texture(GL, 2, './assets/images/textures/tilesNormal.jpg');
+const boxDiffuseTexture = new Texture(GL, 0, './assets/images/textures/cornellBox.jpg');
+const boxSpecularTexture = new Texture(GL, 1);
 
 // Variables for mouse movement
 let mousePos = [0, 0]; // Mouse position in normalized device coordinates, from -1 to +1
@@ -38,14 +41,12 @@ let frameCount = 0; // Frame count for time uniform
 // Create UI
 const ui = new UI();
 ui.addSlider('FOV', 90, 0, 180, 1);
-ui.addSlider('time', 0, 0, 6.3, 0.01);
+ui.addSlider('time', 1.6, 0, 6.3, 0.01);
 ui.addSlider('sphereY', -0.5, -1, 1, 0.1);
 ui.addSlider('sphereRadiusX', 0.5, 0.001, 1, 0.01);
-ui.addSlider('sphereRadiusY', 0.3, 0.001, 1, 0.01);
+ui.addSlider('sphereRadiusY', 0.5, 0.001, 1, 0.01);
 ui.addSlider('sphereRadiusZ', 0.5, 0.001, 1, 0.01);
 ui.addColorPicker('ambient', [0.0, 0.0, 0.0]);
-ui.addColorPicker('diffuse', [1.0, 1.0, 1.0]);
-ui.addColorPicker('specular', [1.0, 1.0, 1.0]);
 ui.addColorPicker('lightColor', [1.0, 1.0, 1.0]);
 ui.addCheckbox('orbitalCam', myCamera.orbitCam);
 ui.elements['orbitalCam'].input.addEventListener('change', () => {
@@ -166,21 +167,25 @@ function drawFrame(shader, boxModelMatrix, sphereModelMatrix, cornellBoxModelMat
     GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
 
     // Sphere
-    defaultTexture.bind();
+    // sphereTexture.bind();
+    tilesDiffuseTexture.bind();
+    tilesSpecularTexture.bind();
     shader.setUniform('uModelMatrix', sphereModelMatrix, 'mat4');
     shader.setUniform('uNormalMatrix', mat3.modelToNormal(sphereModelMatrix), 'mat3');
     shader.setUniform('receiveShadow', true, 'bool')
     sphereMesh.draw();
-
+    
     // Box
-    defaultTexture.bind();
+    tilesDiffuseTexture.bind();
+    tilesSpecularTexture.bind();
     shader.setUniform('uModelMatrix', boxModelMatrix, 'mat4');
     shader.setUniform('uNormalMatrix', mat3.modelToNormal(boxModelMatrix), 'mat3');
     shader.setUniform('receiveShadow', true, 'bool')
     boxMesh.draw();
-
+    
     // Cornell Box
-    boxTexture.bind();
+    boxDiffuseTexture.bind();
+    boxSpecularTexture.bind();
     shader.setUniform('uModelMatrix', cornellBoxModelMatrix, 'mat4');
     shader.setUniform('uNormalMatrix', mat3.modelToNormal(cornellBoxModelMatrix), 'mat3');
     shader.setUniform('receiveShadow', true, 'bool')
@@ -225,9 +230,10 @@ function renderLoop(shader) {
     }
     const materialData = {
         ambient: { value: ui.variables.ambient, type: 'vec3' },
-        diffuse: { value: ui.variables.diffuse, type: 'vec3' },
-        specular: { value: ui.variables.specular, type: 'vec3' },
         shininess: { value: 32.0, type: 'float' },
+        diffuseTexture: { value: 0, type: 'int' }, 
+        specularTexture: { value: 1, type: 'int' },
+        normalTexture: { value: 2, type: 'int' },
     }
 
     shader.use(); // Use the shader program
@@ -267,10 +273,6 @@ function main() {
 
         GL.enable(GL.DEPTH_TEST); // Enable depth testing
         GL.enable(GL.CULL_FACE); // Cull back facing triangles
-
-        // Set uniform for textures used by shader
-        GL.uniform1i(GL.getUniformLocation(myShader.program, "uColorTexture"), 0);
-        GL.uniform1i(GL.getUniformLocation(myShader.program, "uDepthTexture"), 1);
 
         renderLoop(myShader); // Start the render loop
     });
