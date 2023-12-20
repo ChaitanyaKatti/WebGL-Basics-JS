@@ -49,7 +49,6 @@ ui.addColorPicker('specular', [1.0, 1.0, 1.0]);
 ui.addColorPicker('lightColor', [1.0, 1.0, 1.0]);
 ui.addCheckbox('orbitalCam', myCamera.orbitCam);
 ui.elements['orbitalCam'].input.addEventListener('change', () => {
-    console.log("Toggling Camera Mode");
     myCamera.toggleOrbitCam();
 });
 ui.addFPSCounter();
@@ -74,7 +73,6 @@ document.addEventListener('keydown', (event) => {
         activeKeys[event.key.toLowerCase()] = true;
     }
     else {
-        console.log('Invalid key pressed:', event.key);
         event.preventDefault(); // Prevent the default action of the key
     }
 });

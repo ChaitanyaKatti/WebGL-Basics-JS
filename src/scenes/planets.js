@@ -43,7 +43,6 @@ ui.addSlider('FOV', 60, 0, 180, 1);
 ui.addSlider('timeDialation', 1, 0, 2, 0.01);
 ui.addCheckbox('orbitalCam', myCamera.orbitCam);
 ui.elements['orbitalCam'].input.addEventListener('change', () => {
-    console.log("Toggling Camera Mode");
     myCamera.toggleOrbitCam();
 });
 ui.addFPSCounter();
@@ -62,7 +61,6 @@ document.addEventListener('keydown', (event) => {
         activeKeys[event.key.toLowerCase()] = true;
     }
     else {
-        console.log('Invalid key pressed:', event.key);
         event.preventDefault(); // Prevent the default action of the key
     }
 });

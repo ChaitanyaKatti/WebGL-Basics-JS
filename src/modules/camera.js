@@ -23,7 +23,6 @@ export class Camera {
         this.center = [0, 0, 0];
 
         this.wheelCameraListener = (event) => {
-            console.log('wheel-camera');
             this.orbitRadius -= event.deltaY * 0.01;
             this.orbitRadius = Math.max(this.orbitRadius, 0.1);
         }
@@ -172,7 +171,6 @@ export class Camera {
         if (this.orbitCam) {
             this.update = this.updateFPV;
             this.orbitCam = false;
-            console.log("Switched to FPV camera")
         } else {
             // Make sure the camera is looking along the same FPV direction
             this.center[0] = this.position[0] + this.orbitRadius * Math.sin(this.yaw) * Math.sin(this.pitch);
