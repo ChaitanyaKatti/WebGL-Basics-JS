@@ -16,17 +16,17 @@ My implementation of basic WebGL techniques using vanilla **JavaScrpit**. No **N
 ## Examples
 ### Cubes
 
-<img src="src/assets/images/misc/cubes.png" alt="Cubes" width="200"/>
+<img src="src/assets/images/misc/cubes.png" alt="Cubes" width="20%"/>
 
 Simple scene with cubes. The cubes are rotating around their own axis. The camera enabled with orbit controls around the Y axis. The cubes are shaded with UV coordinates.
 
 ### Planets
-<img src="src/assets/images/misc/planets.png" alt="Planets" width="400"/>
+<img src="src/assets/images/misc/planets.png" alt="Planets" width="40%"/>
 
 Simple scene Earth and Sun and moon (not to scale). The camera has both orbit and FPV controls. The planets are shaded with 8K textures and Phong shading(no shadows). Textures are from [Solar System Scope](https://www.solarsystemscope.com/textures/). Also the sun does not emit light, yet :), it is rather lit by a point light.
 
 ### Cornell Box
-<img src="src/assets/images/misc/shadows.gif" alt="Cornell Box" width="400"/>
+<img src="src/assets/images/misc/shadows.gif" alt="Cornell Box" width="60%"/>
 
 Legendary Cornell Box. Currenlty under implementation. I add shadows with simple ray casting and intersection detection. I used inverse of model matrix to transform ray origin and direction to model space. Code of intersection detection is adapted from [Tavian Barnes ](https://tavianator.com/2022/ray_box_boundary.html).
 
