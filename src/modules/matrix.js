@@ -99,7 +99,7 @@ export var mat4 = {
 			cosy = Math.cos(y);
 
 		var Z = [-sinp * siny, -cosp, -sinp * cosy];
-		var UP = [-sinr*cosy, cosr, sinr*siny];
+		var UP = [-sinr * cosy, cosr, sinr * siny];
 		var X = vec3.cross(UP, Z);
 		var X = vec3.normalize(X);
 		var Y = vec3.cross(Z, X);
@@ -119,7 +119,7 @@ export var mat4 = {
 		out[9] = Y[2];
 		out[10] = Z[2];
 		out[11] = 0;
-		
+
 		// Commented code is for zero roll => y axis is up
 		// out[0] = -cosy;
 		// out[1] = -siny * cosp;
@@ -300,7 +300,82 @@ export var mat4 = {
 		out[7] = a[9];
 		out[8] = a[10];
 		return out;
-	}
+	},
+
+	inverse: function (a) {
+		var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
+			a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
+			a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
+			a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15],
+
+			b00 = a00 * a11 - a01 * a10,
+			b01 = a00 * a12 - a02 * a10,
+			b02 = a00 * a13 - a03 * a10,
+			b03 = a01 * a12 - a02 * a11,
+			b04 = a01 * a13 - a03 * a11,
+			b05 = a02 * a13 - a03 * a12,
+			b06 = a20 * a31 - a21 * a30,
+			b07 = a20 * a32 - a22 * a30,
+			b08 = a20 * a33 - a23 * a30,
+			b09 = a21 * a32 - a22 * a31,
+			b10 = a21 * a33 - a23 * a31,
+			b11 = a22 * a33 - a23 * a32,
+
+			d = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06,
+			id;
+
+		if (!d) {
+			console.log("Matrix not invertible.");
+			return null;
+		}
+		id = 1 / d;
+
+		var out = new Float32Array(16);
+		out[0] = (a11 * b11 - a12 * b10 + a13 * b09) * id;
+		out[1] = (-a01 * b11 + a02 * b10 - a03 * b09) * id;
+		out[2] = (a31 * b05 - a32 * b04 + a33 * b03) * id;
+		out[3] = (-a21 * b05 + a22 * b04 - a23 * b03) * id;
+		out[4] = (-a10 * b11 + a12 * b08 - a13 * b07) * id;
+		out[5] = (a00 * b11 - a02 * b08 + a03 * b07) * id;
+		out[6] = (-a30 * b05 + a32 * b02 - a33 * b01) * id;
+		out[7] = (a20 * b05 - a22 * b02 + a23 * b01) * id;
+		out[8] = (a10 * b10 - a11 * b08 + a13 * b06) * id;
+		out[9] = (-a00 * b10 + a01 * b08 - a03 * b06) * id;
+		out[10] = (a30 * b04 - a31 * b02 + a33 * b00) * id;
+		out[11] = (-a20 * b04 + a21 * b02 - a23 * b00) * id;
+		out[12] = (-a10 * b09 + a11 * b07 - a12 * b06) * id;
+		out[13] = (a00 * b09 - a01 * b07 + a02 * b06) * id;
+		out[14] = (-a30 * b03 + a31 * b01 - a32 * b00) * id;
+		out[15] = (a20 * b03 - a21 * b01 + a22 * b00) * id;
+		return out;
+	},
+
+	rotationComponent: function (a) {
+		// convert to mat and normalize columns
+		var out = new Float32Array(16),
+			a00 = a[0], a01 = a[1], a02 = a[2],
+			a10 = a[4], a11 = a[5], a12 = a[6],
+			a20 = a[8], a21 = a[9], a22 = a[10],
+			len;
+
+		len = Math.sqrt(a00 * a00 + a01 * a01 + a02 * a02);
+		out[0] = a00 / len;
+		out[1] = a01 / len;
+		out[2] = a02 / len;
+
+		len = Math.sqrt(a10 * a10 + a11 * a11 + a12 * a12);
+		out[4] = a10 / len;
+		out[5] = a11 / len;
+		out[6] = a12 / len;
+
+		len = Math.sqrt(a20 * a20 + a21 * a21 + a22 * a22);
+		out[8] = a20 / len;
+		out[9] = a21 / len;
+		out[10] = a22 / len;
+
+		out[15] = 1;
+		return out;
+	},
 };
 
 export var mat3 = {
@@ -393,6 +468,16 @@ export var vec3 = {
 			out[1] = a[1] * len;
 			out[2] = a[2] * len;
 		}
+		return out;
+	}
+};
+
+export var vec4 = {
+	toVec3: function (a) {
+		var out = new Float32Array(3);
+		out[0] = a[0];
+		out[1] = a[1];
+		out[2] = a[2];
 		return out;
 	}
 };

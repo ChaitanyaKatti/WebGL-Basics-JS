@@ -26,10 +26,9 @@ Simple scene with cubes. The cubes are rotating around their own axis. The camer
 Simple scene Earth and Sun and moon (not to scale). The camera has both orbit and FPV controls. The planets are shaded with 8K textures and Phong shading(no shadows). Textures are from [Solar System Scope](https://www.solarsystemscope.com/textures/). Also the sun does not emit light, yet :), it is rather lit by a point light.
 
 ### Cornell Box
-<img src="src/assets/images/misc/box.png" alt="Cornell Box" width="400"/>
+<img src="src/assets/images/misc/shadows.gif" alt="Cornell Box" width="400"/>
 
-Legendary Cornell Box. Currenlty under implementation. A simple approach to shadows is used.
-
+Legendary Cornell Box. Currenlty under implementation. I add shadows with simple ray casting and intersection detection. I used inverse of model matrix to transform ray origin and direction to model space. Code of intersection detection is adapted from [Tavian Barnes ](https://tavianator.com/2022/ray_box_boundary.html).
 
 ## UI
 I copied code from [Range Slider Progress in Chrome with pure CSS 🌟](https://codepen.io/ShadowShahriar/pen/zYPPYrQ) for simple sliders. I modified the code to fit my needs. The code is in `src/assets/modules/ui.js`.

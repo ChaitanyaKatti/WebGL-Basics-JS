@@ -1,12 +1,6 @@
 #version 300 es
 precision mediump float;
 
-
-struct Sphere {
-    vec3 center;
-    float radius;
-};
-
 layout(location = 0) in vec3 aPosition;
 layout(location = 1) in vec2 aTexCoord;
 layout(location = 2) in vec3 aNormal;
@@ -25,8 +19,6 @@ uniform mat3 uNormalMatrix;
 
 uniform sampler2D uColorTexture;
 uniform sampler2D uDepthTexture;
-
-uniform Sphere uSphere;
 
 out vec3 vPosition;
 out vec2 vTexCoord;

@@ -12,6 +12,13 @@ struct Light {
 struct Sphere {
     vec3 center;
     float radius;
+    mat4 invModelMatrix;
+};
+
+struct Box {
+    vec3 center;
+    vec3 size;
+    mat4 invModelMatrix;
 };
 
 struct Material {
@@ -32,41 +39,69 @@ uniform vec2 uResolution;
 uniform vec2 uMousePos;
 uniform vec3 uCameraPos;
 
+uniform mat4 uModelMatrix;
+uniform mat4 uViewMatrix;
+uniform mat4 uProjectionMatrix;
+uniform mat3 uNormalMatrix;
+
 uniform bool receiveShadow;
 uniform sampler2D uColorTexture;
 uniform sampler2D uDepthTexture;
 
 uniform Sphere uSphere;
+uniform Box uBox;
 uniform Light uLight;
 uniform Material uMaterial;
 
 out vec4 fragColor;
 
-float intersetSphere(Sphere sphere, vec3 rayOrigin, vec3 rayDir, float tMax) {
-    vec3 oc = rayOrigin - sphere.center;
+float rayIntersetSphere(Sphere sphere, vec3 rayOrigin, vec3 rayDir, float tMax) {
+    // Transform ray to sphere space
+    rayOrigin = (sphere.invModelMatrix * vec4(rayOrigin, 1.0)).xyz;
+    rayDir = (sphere.invModelMatrix * vec4(rayDir, 0.0)).xyz;
+    
+    // Calculate ray-sphere intersection using transformed ray
+    vec3 oc = rayOrigin;
     float a = dot(rayDir, rayDir);
     float b = 2.0 * dot(oc, rayDir);
-    float c = dot(oc, oc) - sphere.radius * sphere.radius;
+    float c = dot(oc, oc) - 1.0;
     float discriminant = b * b - 4.0 * a * c;
     if(discriminant < 0.0) {
         return 0.0;
     }
-    else{
-        float t = (-b - sqrt(discriminant)) / (2.0 * a);
-        // return float(t > 0.0 && t < tMax);
-        if(t > tMax || t < 0.0) {
+    float tNear = (-b - sqrt(discriminant)) / (2.0 * a);
+    float tFar = (-b + sqrt(discriminant)) / (2.0 * a);
+    if(tNear < 0.0) {// Ray origin is inside the sphere
+        tNear = tFar;
+        if(tNear < 0.0) {
             return 0.0;
         }
-        float delta = sqrt(discriminant) / a;
-        return delta;
     }
+    if(tNear > tMax) { // Ray hits the sphere but after the fragPos
+        return 0.0;
+    }
+    return tNear;
 }
 
-vec4 contrast(vec4 value, float c) {
-    vec4 v2 = value * value;
-    vec4 v3 = value * v2;
-    vec4 v4 = value * v3;
-    return clamp(c * v4 - 2.0 * (1.0 + c) * v3 + (c + 3.0) * v2, 0.0, 1.0);
+float rayIntersectBox(Box box, vec3 rayOrigin, vec3 rayDir, float tMax) {
+    // Transform ray to box space
+    rayOrigin = (box.invModelMatrix * vec4(rayOrigin, 1.0)).xyz;
+    rayDir = (box.invModelMatrix * vec4(rayDir, 0.0)).xyz;
+
+    // Calculate ray-box intersection using transformed ray
+    vec3 invDir = 1.0 / rayDir;
+    vec3 t0 = (-0.5 - rayOrigin) * invDir;
+    vec3 t1 = (+0.5 - rayOrigin) * invDir;
+    vec3 tmin = min(t0, t1);
+    vec3 tmax = max(t0, t1);
+    float tNear = max(max(tmin.x, tmin.y), tmin.z);
+    float tFar = min(min(tmax.x, tmax.y), tmax.z);
+
+    // Check for intersection considering rotation
+    if(tNear > tFar || tFar < 0.0 || tNear > tMax) {
+        return 0.0;
+    }
+    return tNear;
 }
 
 float rand(vec2 co) {
@@ -95,10 +130,11 @@ void main() {
     // Intersection
     float occlusion = 0.0;
     if(receiveShadow) {
-        float delta = intersetSphere(uSphere, rayOrigin, rayDir, ligthDistance);
-        // occlusion = delta / (2.0 * uSphere.radius);
-        // occlusion = pow(occlusion, 3.0);
-        if (delta > 0.0) {
+        float tSphere = rayIntersetSphere(uSphere, rayOrigin + 0.01 * vNormal, rayDir, ligthDistance);
+        float tBox = rayIntersectBox(uBox, rayOrigin + 0.01 * vNormal, rayDir, ligthDistance);
+        if(tSphere > 0.0) {
+            occlusion = 0.8;
+        } else if(tBox > 0.0) {
             occlusion = 0.8;
         }
     }
@@ -116,6 +152,6 @@ void main() {
     vec3 specular = spec * uLight.color * uMaterial.specular;
 
     // Final color
-    vec3 finalColor =  attenuation * (ambient + (1.0 - occlusion) * (diffuse + specular));
+    vec3 finalColor = attenuation * (ambient + (1.0 - occlusion) * (diffuse + specular));
     fragColor = vec4(finalColor, 1.0);
 }
