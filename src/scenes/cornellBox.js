@@ -1,9 +1,14 @@
 import { Shader } from '../modules/shader.js';
 import { Camera } from '../modules/camera.js';
-import { vec3, vec4, mat3, mat4 } from '../modules/matrix.js';
+import { vec2, vec3, vec4, mat3, mat4 } from '../modules/matrix.js';
 import { Mesh, Sphere, Plane, Box, CornellBox } from '../modules/mesh.js';
 import { Texture } from '../modules/texture.js';
 import { UI } from '../modules/ui.js';
+import { Object } from '../modules/object.js';
+
+
+const a = (new vec2).scale(2.0).elements;
+console.log(a);
 
 // Set up canvas and gl variables
 const canvas = createCanvas();
@@ -12,7 +17,7 @@ const canvas = createCanvas();
 const GL = createContext(canvas);
 
 // Camera
-const myCamera = new Camera(60 * Math.PI / 180, window.innerWidth / window.innerHeight, 0.1, 130.0, true);
+const myCamera = new Camera(90 * Math.PI / 180, window.innerWidth / window.innerHeight, 0.1, 130.0, true);
 
 // Create shader program
 const myShader = new Shader(GL, './shaders/shadows.vert',
@@ -20,16 +25,18 @@ const myShader = new Shader(GL, './shaders/shadows.vert',
 
 // Create mesh
 const sphereMesh = new Sphere(GL, 100, 100);
-const planeMesh = new Plane(GL, 1, 1);
 const cornellBoxMesh = new CornellBox(GL, 1, 1, 1);
 const boxMesh = new Box(GL, 1, 1, 1);
 
 // Create textures
-const tilesDiffuseTexture = new Texture(GL, 0, './assets/images/textures/tilesDiffuse.jpg');
-const tilesSpecularTexture = new Texture(GL, 1, './assets/images/textures/tilesSpecular.jpg');
-const tilesNormalTexture = new Texture(GL, 2, './assets/images/textures/tilesNormal.jpg');
+const containerDiffuseTexture = new Texture(GL, 0, './assets/images/textures/containerDiffuse.jpg');
+const containerSpecularTexture = new Texture(GL, 1, './assets/images/textures/containerSpecular.jpg');
 const boxDiffuseTexture = new Texture(GL, 0, './assets/images/textures/cornellBox.jpg');
 const boxSpecularTexture = new Texture(GL, 1);
+
+const sphereObj = new Object(sphereMesh, [containerDiffuseTexture, containerSpecularTexture], myShader, null);
+const boxObj = new Object(boxMesh, [containerDiffuseTexture, containerSpecularTexture], myShader, null);
+const cornellBoxObj = new Object(cornellBoxMesh, [boxDiffuseTexture, boxSpecularTexture], myShader, null);
 
 // Variables for mouse movement
 let mousePos = [0, 0]; // Mouse position in normalized device coordinates, from -1 to +1
@@ -48,6 +55,7 @@ ui.addSlider('sphereRadiusY', 0.5, 0.001, 1, 0.01);
 ui.addSlider('sphereRadiusZ', 0.5, 0.001, 1, 0.01);
 ui.addColorPicker('ambient', [0.0, 0.0, 0.0]);
 ui.addColorPicker('lightColor', [1.0, 1.0, 1.0]);
+ui.addSlider('lightIntensity', 1.0, 0.0, 10, 0.1);
 ui.addCheckbox('orbitalCam', myCamera.orbitCam);
 ui.elements['orbitalCam'].input.addEventListener('change', () => {
     myCamera.toggleOrbitCam();
@@ -161,79 +169,61 @@ function setupPointerLock(canvas) {
 }
 
 // Draw a single frame
-function drawFrame(shader, boxModelMatrix, sphereModelMatrix, cornellBoxModelMatrix) {
+function drawFrame() {
     // Clear the canvas
     GL.clearColor(0, 0, 0, 1.0);
     GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
-
     // Sphere
-    // sphereTexture.bind();
-    tilesDiffuseTexture.bind();
-    tilesSpecularTexture.bind();
-    shader.setUniform('uModelMatrix', sphereModelMatrix, 'mat4');
-    shader.setUniform('uNormalMatrix', mat3.modelToNormal(sphereModelMatrix), 'mat3');
-    shader.setUniform('receiveShadow', true, 'bool')
-    sphereMesh.draw();
-    
+    sphereObj.draw()
     // Box
-    tilesDiffuseTexture.bind();
-    tilesSpecularTexture.bind();
-    shader.setUniform('uModelMatrix', boxModelMatrix, 'mat4');
-    shader.setUniform('uNormalMatrix', mat3.modelToNormal(boxModelMatrix), 'mat3');
-    shader.setUniform('receiveShadow', true, 'bool')
-    boxMesh.draw();
-    
+    boxObj.draw();
     // Cornell Box
-    boxDiffuseTexture.bind();
-    boxSpecularTexture.bind();
-    shader.setUniform('uModelMatrix', cornellBoxModelMatrix, 'mat4');
-    shader.setUniform('uNormalMatrix', mat3.modelToNormal(cornellBoxModelMatrix), 'mat3');
-    shader.setUniform('receiveShadow', true, 'bool')
-    cornellBoxMesh.draw();
-
+    cornellBoxObj.draw();
     GL.flush(); // Flush the buffer
 }
 
 // Render loop, updates variables and matrices and draw each frame
 function renderLoop(shader) {
-    // ui.variables.time = performance.now() / 1000; // Update time
     // Update camera
     myCamera.update(mousePos, activeKeys);
     myCamera.fov = ui.variables.FOV * Math.PI / 180;
 
     // Update Model Matrices
+    // Sphere
     var sphereModelMatrix = mat4.scale(ui.variables.sphereRadiusX, ui.variables.sphereRadiusY, ui.variables.sphereRadiusZ);
     sphereModelMatrix = mat4.multiplyMat(mat4.rotateX(ui.variables.time), sphereModelMatrix);
     sphereModelMatrix = mat4.multiplyMat(mat4.rotateY(ui.variables.time), sphereModelMatrix);
-    sphereModelMatrix = mat4.multiplyMat(mat4.translate(0.4, ui.variables.sphereY, 0.1), sphereModelMatrix);
-    var boxModelMatrix = mat4.scale(0.5, 1.2, 0.5);
-    boxModelMatrix = mat4.multiplyMat(mat4.rotateY(ui.variables.time), boxModelMatrix);
-    boxModelMatrix = mat4.multiplyMat(mat4.translate(-0.4, -0.4, -0.4), boxModelMatrix);
-    var cornellBoxModelMatrix = mat4.scale(2.0, 2.0, 2.0);
-
+    sphereObj.modelMatrix = mat4.multiplyMat(mat4.translate(0.4, ui.variables.sphereY, 0.1), sphereModelMatrix);
+    // Box
+    boxObj.modelMatrix = mat4.multiplyMat(
+        mat4.translate(-0.4, -0.4, -0.4),
+        mat4.multiplyMat(
+            mat4.rotateY(ui.variables.time),
+            mat4.scale(0.5, 1.2, 0.5)));
+    // CornellBox
+    cornellBoxObj.modelMatrix = mat4.scale(2.0, 2.0, 2.0);
 
     // Set the uniforms for the sphere and light
     const sphereData = {
         center: { value: [0.4, ui.variables.sphereY, 0.1], type: 'vec3' },
         radius: { value: ui.variables.sphereRadius, type: 'float' },
-        invModelMatrix: { value: mat4.inverse(sphereModelMatrix), type: 'mat4' },
+        invModelMatrix: { value: mat4.inverse(sphereObj.modelMatrix), type: 'mat4' },
     }
     const boxData = {
-        center: { value: vec4.toVec3(mat4.multiplyVec(boxModelMatrix, [0, 0, 0, 1])), type: 'vec3' },
-        size: { value: vec4.toVec3(mat4.multiplyVec(boxModelMatrix, [1, 1, 1, 0])), type: 'vec3' },
-        invModelMatrix: { value: mat4.inverse(boxModelMatrix), type: 'mat4' },
+        center: { value: vec4.toVec3(mat4.multiplyVec(boxObj.modelMatrix, [0, 0, 0, 1])), type: 'vec3' },
+        size: { value: vec4.toVec3(mat4.multiplyVec(boxObj.modelMatrix, [1, 1, 1, 0])), type: 'vec3' },
+        invModelMatrix: { value: mat4.inverse(boxObj.modelMatrix), type: 'mat4' },
     }
-    const ligtData = {
+    const pointLightData = {
         position: { value: [0.9 * Math.cos(ui.variables.time), 0.9, 0.9 * Math.sin(ui.variables.time)], type: 'vec3' },
         color: { value: ui.variables.lightColor, type: 'vec3' },
-        intensity: { value: 1.0, type: 'float' }
+        intensity: { value: ui.variables.lightIntensity, type: 'float' }
     }
     const materialData = {
         ambient: { value: ui.variables.ambient, type: 'vec3' },
         shininess: { value: 32.0, type: 'float' },
-        diffuseTexture: { value: 0, type: 'int' }, 
-        specularTexture: { value: 1, type: 'int' },
-        normalTexture: { value: 2, type: 'int' },
+        diffuseTexture: { value: 0, type: 'int' }, // Sampler2D, at index 0, GL_TEXTURE0
+        specularTexture: { value: 1, type: 'int' }, // Sampler2D, at index 1, GL_TEXTURE1
     }
 
     shader.use(); // Use the shader program
@@ -247,13 +237,12 @@ function renderLoop(shader) {
     // Set the uniforms for the matrices
     shader.setUniform('uViewMatrix', myCamera.viewMatrix, 'mat4');
     shader.setUniform('uProjectionMatrix', myCamera.projectionMatrix, 'mat4');
-    shader.setUniform('receiveShadow', true, 'bool')
     shader.setUniform('uSphere', sphereData, 'struct');
     shader.setUniform('uBox', boxData, 'struct');
-    shader.setUniform('uLight', ligtData, 'struct');
+    shader.setUniform('uPointLight', pointLightData, 'struct');
     shader.setUniform('uMaterial', materialData, 'struct');
 
-    drawFrame(shader, boxModelMatrix, sphereModelMatrix, cornellBoxModelMatrix);
+    drawFrame();
 
     // FPS counter
     frameCount++;

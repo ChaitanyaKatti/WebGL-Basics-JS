@@ -481,3 +481,19 @@ export var vec4 = {
 		return out;
 	}
 };
+
+export class vec2{
+	constructor(elements){
+		if (elements && elements.length===2){
+			this.elements = elements;
+		}
+		else{
+			this.elements = [1.0, 0.0];
+		}
+	}
+	
+	scale(s) {
+		this.elements = this.elements.map( (x) => s*x);
+		return new vec2(this.elements)
+	}
+}

@@ -3,7 +3,7 @@ precision mediump float;
 
 #define PI 3.1415926535897932384626433832795
 
-struct Light {
+struct PointLight {
     vec3 position;
     vec3 color;
     float intensity;
@@ -22,11 +22,10 @@ struct Box {
 };
 
 struct Material {
-    sampler2D diffuseTexture;
-    sampler2D specularTexture;
-    sampler2D normalTexture;
     vec3 ambient;
     float shininess;
+    sampler2D diffuseTexture;
+    sampler2D specularTexture;
 };
 
 in vec3 vPosition;
@@ -49,7 +48,7 @@ uniform bool receiveShadow;
 
 uniform Sphere uSphere;
 uniform Box uBox;
-uniform Light uLight;
+uniform PointLight uPointLight;
 uniform Material uMaterial;
 
 out vec4 fragColor;
@@ -103,28 +102,28 @@ float rayIntersectBox(Box box, vec3 rayOrigin, vec3 rayDir, float tMax) {
     return tNear;
 }
 
-float rand(vec2 co) {
-    return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
-}
+// float rand(vec2 co) {
+//     return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
+// }
 
-vec3 rotate(vec3 v, vec3 axis, float angle) {
-    vec3 vparallel = axis * dot(axis, v);
-    vec3 vperp = v - vparallel;
-    vec3 vperp2 = cross(axis, vperp);
-    return vparallel + vperp * cos(angle) + vperp2 * sin(angle);
-}
+// vec3 rotate(vec3 v, vec3 axis, float angle) {
+//     vec3 vparallel = axis * dot(axis, v);
+//     vec3 vperp = v - vparallel;
+//     vec3 vperp2 = cross(axis, vperp);
+//     return vparallel + vperp * cos(angle) + vperp2 * sin(angle);
+// }
 
 void main() {
     // Ray
-    vec3 rayOrigin = uLight.position;
-    vec3 rayDir = normalize(vPosition - uLight.position);
+    vec3 rayOrigin = uPointLight.position;
+    vec3 rayDir = normalize(vPosition - uPointLight.position);
 
     // Ambient
-    vec3 ambient = uLight.color * uMaterial.ambient;
+    vec3 ambient = uPointLight.color * uMaterial.ambient;
 
     // Attenuation
-    float ligthDistance = length(uLight.position - vPosition);
-    float attenuation = uLight.intensity / (1.0 + 0.1 * ligthDistance + 0.01 * ligthDistance * ligthDistance);
+    float ligthDistance = length(uPointLight.position - vPosition);
+    float attenuation = uPointLight.intensity / (1.0 + 0.1 * ligthDistance + 0.01 * ligthDistance * ligthDistance);
 
     // Intersection
     float occlusion = 0.0;
@@ -140,15 +139,15 @@ void main() {
 
     // Diffuse
     vec3 normal = normalize(vNormal);
-    vec3 lightDir = normalize(uLight.position - vPosition);
+    vec3 lightDir = normalize(uPointLight.position - vPosition);
     float diff = max(dot(normal, lightDir), 0.0);
-    vec3 diffuse = diff * uLight.color * texture(uMaterial.diffuseTexture, vTexCoord).rgb;
+    vec3 diffuse = diff * uPointLight.color * texture(uMaterial.diffuseTexture, vTexCoord).rgb;
 
     // Specular
     vec3 viewDir = normalize(uCameraPos - vPosition);
     vec3 relfectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(relfectDir, viewDir), 0.0), uMaterial.shininess);
-    vec3 specular = spec * uLight.color * texture(uMaterial.specularTexture, vTexCoord).rgb;
+    vec3 specular = spec * uPointLight.color * texture(uMaterial.specularTexture, vTexCoord).rgb;
 
     // Final color
     vec3 finalColor = attenuation * (ambient + (1.0 - occlusion) * (diffuse + specular));
