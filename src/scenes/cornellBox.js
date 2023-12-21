@@ -1,14 +1,11 @@
 import { Shader } from '../modules/shader.js';
 import { Camera } from '../modules/camera.js';
-import { vec2, vec3, vec4, mat3, mat4 } from '../modules/matrix.js';
-import { Mesh, Sphere, Plane, Box, CornellBox } from '../modules/mesh.js';
+import { mat4 } from '../modules/matrix.js';
+import { Sphere, Box, CornellBox } from '../modules/mesh.js';
 import { Texture } from '../modules/texture.js';
 import { UI } from '../modules/ui.js';
 import { Object } from '../modules/object.js';
 
-
-const a = (new vec2).scale(2.0).elements;
-console.log(a);
 
 // Set up canvas and gl variables
 const canvas = createCanvas();
@@ -34,6 +31,7 @@ const containerSpecularTexture = new Texture(GL, 1, './assets/images/textures/co
 const boxDiffuseTexture = new Texture(GL, 0, './assets/images/textures/cornellBox.jpg');
 const boxSpecularTexture = new Texture(GL, 1);
 
+// Create Objects
 const sphereObj = new Object(sphereMesh, [containerDiffuseTexture, containerSpecularTexture], myShader, null);
 const boxObj = new Object(boxMesh, [containerDiffuseTexture, containerSpecularTexture], myShader, null);
 const cornellBoxObj = new Object(cornellBoxMesh, [boxDiffuseTexture, boxSpecularTexture], myShader, null);
@@ -173,12 +171,14 @@ function drawFrame() {
     // Clear the canvas
     GL.clearColor(0, 0, 0, 1.0);
     GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
+    
     // Sphere
     sphereObj.draw()
     // Box
     boxObj.draw();
     // Cornell Box
     cornellBoxObj.draw();
+
     GL.flush(); // Flush the buffer
 }
 
@@ -190,29 +190,22 @@ function renderLoop(shader) {
 
     // Update Model Matrices
     // Sphere
-    var sphereModelMatrix = mat4.scale(ui.variables.sphereRadiusX, ui.variables.sphereRadiusY, ui.variables.sphereRadiusZ);
-    sphereModelMatrix = mat4.multiplyMat(mat4.rotateX(ui.variables.time), sphereModelMatrix);
-    sphereModelMatrix = mat4.multiplyMat(mat4.rotateY(ui.variables.time), sphereModelMatrix);
-    sphereObj.modelMatrix = mat4.multiplyMat(mat4.translate(0.4, ui.variables.sphereY, 0.1), sphereModelMatrix);
+    sphereObj.modelMatrix = (new mat4).scale(ui.variables.sphereRadiusX, ui.variables.sphereRadiusY).translate(0.5, -0.5, 0.5);
     // Box
-    boxObj.modelMatrix = mat4.multiplyMat(
-        mat4.translate(-0.4, -0.4, -0.4),
-        mat4.multiplyMat(
-            mat4.rotateY(ui.variables.time),
-            mat4.scale(0.5, 1.2, 0.5)));
+    boxObj.modelMatrix = (new mat4).translate(-0.4, -0.4, -0.3).scale(0.5, 1.2, 0.5);
     // CornellBox
-    cornellBoxObj.modelMatrix = mat4.scale(2.0, 2.0, 2.0);
+    cornellBoxObj.modelMatrix = (new mat4).scale(2.0, 2.0, 2.0);
 
     // Set the uniforms for the sphere and light
     const sphereData = {
         center: { value: [0.4, ui.variables.sphereY, 0.1], type: 'vec3' },
         radius: { value: ui.variables.sphereRadius, type: 'float' },
-        invModelMatrix: { value: mat4.inverse(sphereObj.modelMatrix), type: 'mat4' },
+        invModelMatrix: { value: sphereObj.modelMatrix.inverse(), type: 'mat4' },
     }
     const boxData = {
-        center: { value: vec4.toVec3(mat4.multiplyVec(boxObj.modelMatrix, [0, 0, 0, 1])), type: 'vec3' },
-        size: { value: vec4.toVec3(mat4.multiplyVec(boxObj.modelMatrix, [1, 1, 1, 0])), type: 'vec3' },
-        invModelMatrix: { value: mat4.inverse(boxObj.modelMatrix), type: 'mat4' },
+        center: { value: (boxObj.modelMatrix.multiplyVec4([0, 0, 0, 1])).toVec3(), type: 'vec3' },
+        size: { value: (boxObj.modelMatrix.multiplyVec4([1, 1, 1, 0])).toVec3(), type: 'vec3' },
+        invModelMatrix: { value: boxObj.modelMatrix.inverse(), type: 'mat4' },
     }
     const pointLightData = {
         position: { value: [0.9 * Math.cos(ui.variables.time), 0.9, 0.9 * Math.sin(ui.variables.time)], type: 'vec3' },
@@ -242,6 +235,7 @@ function renderLoop(shader) {
     shader.setUniform('uPointLight', pointLightData, 'struct');
     shader.setUniform('uMaterial', materialData, 'struct');
 
+    // Draw a single frame
     drawFrame();
 
     // FPS counter
@@ -250,6 +244,7 @@ function renderLoop(shader) {
     ui.elements['fpsCounter'].innerHTML = `FPS: ${FPS.toFixed(0)}`;
     lastFrameTime = performance.now();
 
+    // Request a next frame
     requestAnimationFrame(function () { renderLoop(shader); }); // Request the next frame
 }
 

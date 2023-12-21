@@ -33,14 +33,14 @@ export class Camera {
             // this.mouseDelta = [0.0, 0.0];
             // this.previousMouseDelta = [0.0, 0.0];
             // this.lastMousePos = [0.0, 0.0];
-            this.viewMatrix = mat4.lookAt(this.position, [0, 0, 0], [0, 1, 0]);
+            this.viewMatrix = (new mat4).lookAt(this.position, [0, 0, 0], [0, 1, 0]);
             this.update = this.updateOrbitCam;
 
         } else {
-            this.viewMatrix = mat4.lookAtRPY(this.position, this.roll, this.pitch, this.yaw);
+            this.viewMatrix = (new mat4).lookAtRPY(this.position, this.roll, this.pitch, this.yaw);
             this.update = this.updateFPV;
         }
-        this.projectionMatrix = mat4.perspective(this.fov, this.aspect, this.near, this.far);
+        this.projectionMatrix = (new mat4).perspective(this.fov, this.aspect, this.near, this.far);
     }
 
 
@@ -95,8 +95,8 @@ export class Camera {
         }
     }
     updateMatricesFPV() {
-        this.viewMatrix = mat4.lookAtRPY(this.position, this.roll, this.pitch, this.yaw);
-        this.projectionMatrix = mat4.perspective(this.fov, this.aspect, this.near, this.far);
+        this.viewMatrix = (new mat4).lookAtRPY(this.position, this.roll, this.pitch, this.yaw);
+        this.projectionMatrix = (new mat4).perspective(this.fov, this.aspect, this.near, this.far);
     }
 
 
@@ -162,8 +162,8 @@ export class Camera {
         this.position[2] = this.center[2] + this.orbitRadius * Math.cos(positionYaw) * Math.sin(positionPitch);
     }
     updateMatricesOrbitCam() {
-        this.viewMatrix = mat4.lookAt(this.position, this.center, [0, 1, 0]);
-        this.projectionMatrix = mat4.perspective(this.fov, this.aspect, this.near, this.far);
+        this.viewMatrix = (new mat4).lookAt(this.position, this.center, [0, 1, 0]);
+        this.projectionMatrix = (new mat4).perspective(this.fov, this.aspect, this.near, this.far);
     }
 
 

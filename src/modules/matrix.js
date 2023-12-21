@@ -1,15 +1,153 @@
-export var mat4 = {
-	identity: function () {
-		var out = new Float32Array(16);
-		out[0] = 1;
-		out[5] = 1;
-		out[10] = 1;
-		out[15] = 1;
-		return out;
-	},
+export class vec2 extends Float32Array {
+	constructor(array) {
+		if (array && array.length === 2) {
+			super(array);
+		}
+		else {
+			super([0.0, 0.0])
+		}
+	}
+}
 
-	lookAt: function (eye, center, up) {
-		// y axis is up
+
+export class vec3 extends Float32Array {
+	constructor(array) {
+		if (array && array.length === 3) {
+			super(array);
+		}
+		else {
+			super(3);
+		}
+	}
+
+	cross(b) {
+		var out = new Float32Array(3);
+		out[0] = this[1] * b[2] - this[2] * b[1];
+		out[1] = this[2] * b[0] - this[0] * b[2];
+		out[2] = this[0] * b[1] - this[1] * b[0];
+		return new vec3(out);
+	}
+
+	dot(b) {
+		return this[0] * b[0] + this[1] * b[1] + this[2] * b[2];
+	}
+
+	length(a) {
+		return Math.sqrt(this[0] * this[0] + this[1] * this[1] + this[2] * this[2]);
+	}
+
+	normalize() {
+		var out = new Float32Array(3),
+			x = this[0],
+			y = this[1],
+			z = this[2],
+			len = x * x + y * y + z * z;
+		if (len > 0) {
+			len = 1 / Math.sqrt(len);
+			out[0] = this[0] * len;
+			out[1] = this[1] * len;
+			out[2] = this[2] * len;
+		}
+		return new vec3(out);
+	}
+}
+
+
+export class vec4 extends Float32Array {
+	constructor(array) {
+		if (array && array.length === 4) {
+			super(array)
+		}
+		else {
+			super(4);
+		}
+	}
+
+	toVec3() {
+		return new vec3([this[0], this[1], this[2]])
+	}
+}
+
+
+export class mat3 extends Float32Array {
+	constructor(array) {
+		if (array && array.length === 9) {
+			super(array);
+		}
+		else {
+			super(9);
+			this[0] = 1.0;
+			this[4] = 1.0;
+			this[8] = 1.0;
+		}
+	}
+
+	transpose() {
+		var out = new Float32Array(9);
+		out[0] = this[0];
+		out[1] = this[3];
+		out[2] = this[6];
+		out[3] = this[1];
+		out[4] = this[4];
+		out[5] = this[7];
+		out[6] = this[2];
+		out[7] = this[5];
+		out[8] = this[8];
+
+		return new mat3(out);
+	}
+
+	inverse() {
+		var a00 = this[0], a01 = this[1], a02 = this[2],
+			a10 = this[3], a11 = this[4], a12 = this[5],
+			a20 = this[6], a21 = this[7], a22 = this[8],
+
+			b00 = a22 * a11 - a12 * a21,
+			b01 = -a22 * a10 + a12 * a20,
+			b02 = a21 * a10 - a11 * a20,
+
+			d = a00 * b00 + a01 * b01 + a02 * b02,
+			id;
+
+		if (!d) {
+			console.log("Matrix not invertible.");
+			return null;
+		}
+		id = 1 / d;
+
+		var out = new Float32Array(9);
+		out[0] = b00 * id;
+		out[1] = (-a22 * a01 + a02 * a21) * id;
+		out[2] = (a12 * a01 - a02 * a11) * id;
+		out[3] = b01 * id;
+		out[4] = (a22 * a00 - a02 * a20) * id;
+		out[5] = (-a12 * a00 + a02 * a10) * id;
+		out[6] = b02 * id;
+		out[7] = (-a21 * a00 + a01 * a20) * id;
+		out[8] = (a11 * a00 - a01 * a10) * id;
+
+		return new mat3(out);
+	}
+}
+
+
+export class mat4 extends Float32Array {
+	constructor(array) {
+		if (array && array.length === 16) {
+			super(array);
+		}
+		else {
+			super(16);
+			this[0] = 1.0;
+			this[5] = 1.0;
+			this[10] = 1.0;
+			this[15] = 1.0;
+		}
+	}
+
+	// Camera Related Methods
+	lookAt(eye, center, up) {
+		var out = new Float32Array(16);
 		var x0, x1, x2, y0, y1, y2, z0, z1, z2, len,
 			eyex = eye[0],
 			eyey = eye[1],
@@ -83,12 +221,12 @@ export var mat4 = {
 		out[13] = -(y0 * eyex + y1 * eyey + y2 * eyez);
 		out[14] = -(z0 * eyex + z1 * eyey + z2 * eyez);
 		out[15] = 1;
-		return out;
-	},
+		return new mat4(out);
+	}
 
-	lookAtRPY: function (eye, roll, pitch, yaw) {
-		var out = new Float32Array(16),
-			r = roll,
+	lookAtRPY(eye, roll, pitch, yaw) {
+		var out = new Float32Array(16);
+		var r = roll,
 			p = pitch,
 			y = yaw,
 			sinr = Math.sin(r),
@@ -100,53 +238,32 @@ export var mat4 = {
 
 		var Z = [-sinp * siny, -cosp, -sinp * cosy];
 		var UP = [-sinr * cosy, cosr, sinr * siny];
-		var X = vec3.cross(UP, Z);
-		var X = vec3.normalize(X);
-		var Y = vec3.cross(Z, X);
-		var Y = vec3.normalize(Y);
+		var X = (new vec3(UP)).cross(Z).normalize();
+		var Y = (new vec3(Z)).cross(X).normalize();
 
 		out[0] = X[0];
 		out[1] = Y[0];
 		out[2] = Z[0];
 		out[3] = 0;
-
 		out[4] = X[1];
 		out[5] = Y[1];
 		out[6] = Z[1];
 		out[7] = 0;
-
 		out[8] = X[2];
 		out[9] = Y[2];
 		out[10] = Z[2];
 		out[11] = 0;
-
-		// Commented code is for zero roll => y axis is up
-		// out[0] = -cosy;
-		// out[1] = -siny * cosp;
-		// out[2] = -siny * sinp;
-		// out[3] = 0;
-
-		// out[4] = 0;
-		// out[5] = sinp;
-		// out[6] = -cosp;
-		// out[7] = 0;
-
-		// out[8] = siny;
-		// out[9] = -cosy * cosp;
-		// out[10] = -cosy * sinp;
-		// out[11] = 0;
-
 		out[12] = -eye[0] * out[0] - eye[1] * out[4] - eye[2] * out[8];
 		out[13] = -eye[0] * out[1] - eye[1] * out[5] - eye[2] * out[9];
 		out[14] = -eye[0] * out[2] - eye[1] * out[6] - eye[2] * out[10];
 		out[15] = 1;
 
-		return out;
-	},
+		return new mat4(out);
+	}
 
-	orthographic: function (left, right, bottom, top, near, far) {
-		var out = new Float32Array(16),
-			lr = 1 / (left - right),
+	orthographic(left, right, bottom, top, near, far) {
+		var out = new Float32Array(16);
+		var lr = 1 / (left - right),
 			bt = 1 / (bottom - top),
 			nf = 1 / (near - far);
 		out[0] = -2 * lr;
@@ -155,24 +272,66 @@ export var mat4 = {
 		out[12] = (left + right) * lr;
 		out[13] = (top + bottom) * bt;
 		out[14] = (far + near) * nf;
-		return out;
-	},
+		return new mat4(out)
+	}
 
-	perspective: function (fovy, aspect, near, far) {
-		var out = new Float32Array(16),
-			f = 1.0 / Math.tan(fovy / 2),
+	perspective(fovy, aspect, near, far) {
+		var out = new Float32Array(16);
+		var f = 1.0 / Math.tan(fovy / 2),
 			nf = 1 / (near - far);
 		out[0] = f / aspect;
 		out[5] = f;
 		out[10] = (far + near) * nf;
 		out[11] = -1;
 		out[14] = (2 * far * near) * nf;
-		return out;
-	},
+		return new mat4(out)
+	}
 
-	rotateX: function (angle) {
-		var out = new Float32Array(16),
-			s = Math.sin(angle),
+	modelToNormal() {
+		return this.toMat3().inverse().transpose()
+	}
+
+	// Model Matrix Related Methods
+	scale(x, y, z) {
+		if (y === undefined) {
+			y = x;
+		}
+		if (z === undefined) {
+			z = x;
+		}
+		var out = [...this];
+		out[0] *= x;
+		out[1] *= y;
+		out[2] *= z;
+		out[3] = 0.0;
+		out[4] *= x;
+		out[5] *= y;
+		out[6] *= z;
+		out[7] = 0.0;
+		out[8] *= x;
+		out[9] *= y;
+		out[10] *= z;
+		out[11] = 0.0;
+		// out[12] *= x;
+		// out[13] *= y;
+		// out[14] *= z;
+		out[15] = 1;
+
+		return new mat4(out)
+	}
+
+	translate(x, y, z) {
+		var out = [...this];
+		out[12] += x;
+		out[13] += y;
+		out[14] += z;
+		out[15] = 1;
+		return new mat4(out)
+	}
+
+	rotateX(angle) {
+		var out = new Float32Array(16);
+		var s = Math.sin(angle),
 			c = Math.cos(angle);
 		out[0] = 1;
 		out[15] = 1;
@@ -180,12 +339,12 @@ export var mat4 = {
 		out[10] = c;
 		out[9] = -s;
 		out[6] = s;
-		return out;
-	},
+		return new mat4(out)
+	}
 
-	rotateY: function (angle) {
-		var out = new Float32Array(16),
-			s = Math.sin(angle),
+	rotateY(angle) {
+		var out = new Float32Array(16);
+		var s = Math.sin(angle),
 			c = Math.cos(angle);
 		out[5] = 1;
 		out[15] = 1;
@@ -193,12 +352,12 @@ export var mat4 = {
 		out[2] = -s;
 		out[8] = s;
 		out[10] = c;
-		return out;
-	},
+		return new mat4(out)
+	}
 
-	rotateZ: function (angle) {
-		var out = new Float32Array(16),
-			s = Math.sin(angle),
+	rotateZ(angle) {
+		var out = new Float32Array(16);
+		var s = Math.sin(angle),
 			c = Math.cos(angle);
 		out[10] = 1;
 		out[15] = 1;
@@ -206,39 +365,14 @@ export var mat4 = {
 		out[1] = s;
 		out[4] = -s;
 		out[5] = c;
-		return out;
-	},
+		return new mat4(out)
+	}
 
-	scale: function (x, y, z) {
-		if (y === undefined) {
-			y = x;
-		}
-		if (z === undefined) {
-			z = x;
-		}
+	// Basic Matrix math
+	multiplyMat(a, b) {
 		var out = new Float32Array(16);
-		out[0] = x;
-		out[5] = y;
-		out[10] = z;
-		out[15] = 1;
-		return out;
-	},
 
-	translate: function (x, y, z) {
-		var out = new Float32Array(16);
-		out[0] = 1;
-		out[5] = 1;
-		out[10] = 1;
-		out[12] = x;
-		out[13] = y;
-		out[14] = z;
-		out[15] = 1;
-		return out;
-	},
-
-	multiplyMat: function (a, b) {
-		var out = new Float32Array(16),
-			a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
+		var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
 			a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
 			a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
 			a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15],
@@ -275,38 +409,27 @@ export var mat4 = {
 		out[13] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
 		out[14] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
 		out[15] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
-		return out;
-	},
 
-	multiplyVec: function (mat, vec) {
+		return new mat4(out)
+	}
+
+	multiplyVec4(vec) {
 		var out = new Float32Array(4),
 			x = vec[0], y = vec[1], z = vec[2], w = vec[3];
-		out[0] = mat[0] * x + mat[4] * y + mat[8] * z + mat[12] * w;
-		out[1] = mat[1] * x + mat[5] * y + mat[9] * z + mat[13] * w;
-		out[2] = mat[2] * x + mat[6] * y + mat[10] * z + mat[14] * w;
-		out[3] = mat[3] * x + mat[7] * y + mat[11] * z + mat[15] * w;
-		return out;
-	},
+		out[0] = this[0] * x + this[4] * y + this[8] * z + this[12] * w;
+		out[1] = this[1] * x + this[5] * y + this[9] * z + this[13] * w;
+		out[2] = this[2] * x + this[6] * y + this[10] * z + this[14] * w;
+		out[3] = this[3] * x + this[7] * y + this[11] * z + this[15] * w;
 
-	toMat3: function (a) {
-		var out = new Float32Array(9);
-		out[0] = a[0];
-		out[1] = a[1];
-		out[2] = a[2];
-		out[3] = a[4];
-		out[4] = a[5];
-		out[5] = a[6];
-		out[6] = a[8];
-		out[7] = a[9];
-		out[8] = a[10];
-		return out;
-	},
+		return new vec4(out)
+	}
 
-	inverse: function (a) {
-		var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
-			a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
-			a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
-			a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15],
+	inverse() {
+		var out = new Float32Array(16);
+		var a00 = this[0], a01 = this[1], a02 = this[2], a03 = this[3],
+			a10 = this[4], a11 = this[5], a12 = this[6], a13 = this[7],
+			a20 = this[8], a21 = this[9], a22 = this[10], a23 = this[11],
+			a30 = this[12], a31 = this[13], a32 = this[14], a33 = this[15],
 
 			b00 = a00 * a11 - a01 * a10,
 			b01 = a00 * a12 - a02 * a10,
@@ -330,7 +453,6 @@ export var mat4 = {
 		}
 		id = 1 / d;
 
-		var out = new Float32Array(16);
 		out[0] = (a11 * b11 - a12 * b10 + a13 * b09) * id;
 		out[1] = (-a01 * b11 + a02 * b10 - a03 * b09) * id;
 		out[2] = (a31 * b05 - a32 * b04 + a33 * b03) * id;
@@ -347,153 +469,20 @@ export var mat4 = {
 		out[13] = (a00 * b09 - a01 * b07 + a02 * b06) * id;
 		out[14] = (-a30 * b03 + a31 * b01 - a32 * b00) * id;
 		out[15] = (a20 * b03 - a21 * b01 + a22 * b00) * id;
-		return out;
-	},
+		return new mat4(out);
+	}
 
-	rotationComponent: function (a) {
-		// convert to mat and normalize columns
-		var out = new Float32Array(16),
-			a00 = a[0], a01 = a[1], a02 = a[2],
-			a10 = a[4], a11 = a[5], a12 = a[6],
-			a20 = a[8], a21 = a[9], a22 = a[10],
-			len;
-
-		len = Math.sqrt(a00 * a00 + a01 * a01 + a02 * a02);
-		out[0] = a00 / len;
-		out[1] = a01 / len;
-		out[2] = a02 / len;
-
-		len = Math.sqrt(a10 * a10 + a11 * a11 + a12 * a12);
-		out[4] = a10 / len;
-		out[5] = a11 / len;
-		out[6] = a12 / len;
-
-		len = Math.sqrt(a20 * a20 + a21 * a21 + a22 * a22);
-		out[8] = a20 / len;
-		out[9] = a21 / len;
-		out[10] = a22 / len;
-
-		out[15] = 1;
-		return out;
-	},
-};
-
-export var mat3 = {
-	identity: function () {
+	toMat3() {
 		var out = new Float32Array(9);
-		out[0] = 1;
-		out[4] = 1;
-		out[8] = 1;
-		return out;
-	},
-
-	transpose: function (a) {
-		var out = new Float32Array(9);
-		out[0] = a[0];
-		out[1] = a[3];
-		out[2] = a[6];
-		out[3] = a[1];
-		out[4] = a[4];
-		out[5] = a[7];
-		out[6] = a[2];
-		out[7] = a[5];
-		out[8] = a[8];
-		return out;
-	},
-
-	inverse: function (a) {
-		var a00 = a[0], a01 = a[1], a02 = a[2],
-			a10 = a[3], a11 = a[4], a12 = a[5],
-			a20 = a[6], a21 = a[7], a22 = a[8],
-
-			b00 = a22 * a11 - a12 * a21,
-			b01 = -a22 * a10 + a12 * a20,
-			b02 = a21 * a10 - a11 * a20,
-
-			d = a00 * b00 + a01 * b01 + a02 * b02,
-			id;
-
-		if (!d) {
-			console.log("Matrix not invertible.");
-			return null;
-		}
-		id = 1 / d;
-
-		var out = new Float32Array(9);
-		out[0] = b00 * id;
-		out[1] = (-a22 * a01 + a02 * a21) * id;
-		out[2] = (a12 * a01 - a02 * a11) * id;
-		out[3] = b01 * id;
-		out[4] = (a22 * a00 - a02 * a20) * id;
-		out[5] = (-a12 * a00 + a02 * a10) * id;
-		out[6] = b02 * id;
-		out[7] = (-a21 * a00 + a01 * a20) * id;
-		out[8] = (a11 * a00 - a01 * a10) * id;
-		return out;
-	},
-
-	modelToNormal: function (modelMatrix) {
-		var out = new Float32Array(16);
-		out = mat3.transpose(mat3.inverse(mat4.toMat3(modelMatrix)));
-		return out;
-	}
-};
-
-export var vec3 = {
-	cross: function (a, b) {
-		var out = new Float32Array(3);
-		out[0] = a[1] * b[2] - a[2] * b[1];
-		out[1] = a[2] * b[0] - a[0] * b[2];
-		out[2] = a[0] * b[1] - a[1] * b[0];
-		return out;
-	},
-
-	dot: function (a, b) {
-		return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-	},
-
-	length: function (a) {
-		return Math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
-	},
-
-	normalize: function (a) {
-		var out = new Float32Array(3),
-			x = a[0],
-			y = a[1],
-			z = a[2],
-			len = x * x + y * y + z * z;
-		if (len > 0) {
-			len = 1 / Math.sqrt(len);
-			out[0] = a[0] * len;
-			out[1] = a[1] * len;
-			out[2] = a[2] * len;
-		}
-		return out;
-	}
-};
-
-export var vec4 = {
-	toVec3: function (a) {
-		var out = new Float32Array(3);
-		out[0] = a[0];
-		out[1] = a[1];
-		out[2] = a[2];
-		return out;
-	}
-};
-
-export class vec2{
-	constructor(elements){
-		if (elements && elements.length===2){
-			this.elements = elements;
-		}
-		else{
-			this.elements = [1.0, 0.0];
-		}
-	}
-	
-	scale(s) {
-		this.elements = this.elements.map( (x) => s*x);
-		return new vec2(this.elements)
+		out[0] = this[0];
+		out[1] = this[1];
+		out[2] = this[2];
+		out[3] = this[4];
+		out[4] = this[5];
+		out[5] = this[6];
+		out[6] = this[8];
+		out[7] = this[9];
+		out[8] = this[10];
+		return new mat3(out);
 	}
 }
