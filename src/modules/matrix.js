@@ -298,11 +298,18 @@ export class mat4 extends Float32Array {
 		return out.multiplyMat(this);
 	}
 
-	translate(x, y, z) {
+	translate(x, y, z, scaleInvariant = false) {
 		const out = new mat4();
-		out[12] = x;
-		out[13] = y;
-		out[14] = z;
+		if (scaleInvariant) {
+			out[12] = x / Math.sqrt(this[0] * this[0] + this[1] * this[1] + this[2] * this[2]);
+			out[13] = y / Math.sqrt(this[4] * this[4] + this[5] * this[5] + this[6] * this[6]);
+			out[14] = z / Math.sqrt(this[8] * this[8] + this[9] * this[9] + this[10] * this[10]);
+		}
+		else {
+			out[12] = x;
+			out[13] = y;
+			out[14] = z;
+		}
 		return out.multiplyMat(this);
 	}
 
@@ -381,10 +388,10 @@ export class mat4 extends Float32Array {
 		return this.multiplyMat(out);
 	}
 
-	selfTranslate(x, y, z) {
+	selfTranslate(x, y, z, scaleInvariant = false) {
 		const selfDisplacement = new vec4([x, y, z, 0.0]);
 		const worldDisplacement = this.multiplyVec4(selfDisplacement);
-		return this.translate(worldDisplacement[0], worldDisplacement[1], worldDisplacement[2])
+		return this.translate(worldDisplacement[0], worldDisplacement[1], worldDisplacement[2], scaleInvariant);
 	}
 
 	selfRotateX(angle) {

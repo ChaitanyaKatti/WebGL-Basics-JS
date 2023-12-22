@@ -14,7 +14,7 @@ const canvas = createCanvas();
 const GL = createContext(canvas);
 
 // Camera
-const myCamera = new Camera(90 * Math.PI / 180, window.innerWidth / window.innerHeight, 0.1, 130.0, true);
+const myCamera = new Camera(75 * Math.PI / 180, window.innerWidth / window.innerHeight, 0.1, 130.0, true);
 
 // Create shader program
 const myShader = new Shader(GL, './shaders/shadows.vert',
@@ -45,7 +45,7 @@ let frameCount = 0; // Frame count for time uniform
 
 // Create UI
 const ui = new UI();
-ui.addSlider('FOV', 90, 0, 180, 1);
+ui.addSlider('FOV', 75, 0, 180, 1);
 ui.addSlider('time', 0, 0, 6.3, 0.01);
 ui.addSlider('sphereY', -0.5, -1, 1, 0.1);
 ui.addSlider('sphereRadiusX', 0.3, 0.001, 1, 0.01);
@@ -191,13 +191,14 @@ function renderLoop(shader) {
     // Update Model Matrices
     // Sphere
     sphereObj.modelMatrix = (new mat4)
-        .scale(ui.variables.sphereRadiusX, ui.variables.sphereRadiusY, ui.variables.sphereRadiusZ)
-        .translate(0.5, 0.0, 0.0)
-        .rotateY(performance.now() / 1000.0)
-        .selfRotateY(-performance.now() / 1000.0)
-        ;
+        .selfScale(ui.variables.sphereRadiusX, ui.variables.sphereRadiusY, ui.variables.sphereRadiusZ)
+        .selfTranslate(0.5, ui.variables.sphereY, 0.5, true)
+        .selfRotateY(-performance.now() / 1000.0);
     // Box
-    boxObj.modelMatrix = (new mat4).translate(-0.4, -0.4, -0.3).scale(0.5, 1.2, 0.5);//.rotateX(performance.now() / 1000.0);
+    boxObj.modelMatrix = (new mat4)
+        .scale(0.5, 1.2, 0.5)
+        .translate(-0.4, -0.4, -0.3)
+        .selfRotateY(performance.now() / 1000.0);
     // CornellBox
     cornellBoxObj.modelMatrix = (new mat4).scale(2.0, 2.0, 2.0);
 

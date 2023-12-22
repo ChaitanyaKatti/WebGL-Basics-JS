@@ -19,7 +19,7 @@ export class Camera {
 
         // Orbit camera variables
         this.orbitCam = orbitCam; // Boolean to toggle between orbit and FPV camera
-        this.orbitRadius = 2.0;
+        this.orbitRadius = 2.4;
         this.center = [0, 0, 0];
 
         this.wheelCameraListener = (event) => {
