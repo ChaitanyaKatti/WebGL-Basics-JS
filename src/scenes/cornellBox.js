@@ -26,8 +26,8 @@ const cornellBoxMesh = new CornellBox(GL, 1, 1, 1);
 const boxMesh = new Box(GL, 1, 1, 1);
 
 // Create textures
-const containerDiffuseTexture = new Texture(GL, 0, './assets/images/textures/containerDiffuse.jpg');
-const containerSpecularTexture = new Texture(GL, 1, './assets/images/textures/containerSpecular.jpg');
+const containerDiffuseTexture = new Texture(GL, 0, './assets/images/textures/tilesDiffuse.jpg');
+const containerSpecularTexture = new Texture(GL, 1, './assets/images/textures/tilesSpecular.jpg');
 const boxDiffuseTexture = new Texture(GL, 0, './assets/images/textures/cornellBox.jpg');
 const boxSpecularTexture = new Texture(GL, 1);
 
@@ -46,11 +46,11 @@ let frameCount = 0; // Frame count for time uniform
 // Create UI
 const ui = new UI();
 ui.addSlider('FOV', 90, 0, 180, 1);
-ui.addSlider('time', 1.6, 0, 6.3, 0.01);
+ui.addSlider('time', 0, 0, 6.3, 0.01);
 ui.addSlider('sphereY', -0.5, -1, 1, 0.1);
-ui.addSlider('sphereRadiusX', 0.5, 0.001, 1, 0.01);
-ui.addSlider('sphereRadiusY', 0.5, 0.001, 1, 0.01);
-ui.addSlider('sphereRadiusZ', 0.5, 0.001, 1, 0.01);
+ui.addSlider('sphereRadiusX', 0.3, 0.001, 1, 0.01);
+ui.addSlider('sphereRadiusY', 0.3, 0.001, 1, 0.01);
+ui.addSlider('sphereRadiusZ', 0.3, 0.001, 1, 0.01);
 ui.addColorPicker('ambient', [0.0, 0.0, 0.0]);
 ui.addColorPicker('lightColor', [1.0, 1.0, 1.0]);
 ui.addSlider('lightIntensity', 1.0, 0.0, 10, 0.1);
@@ -171,7 +171,7 @@ function drawFrame() {
     // Clear the canvas
     GL.clearColor(0, 0, 0, 1.0);
     GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
-    
+
     // Sphere
     sphereObj.draw()
     // Box
@@ -190,9 +190,14 @@ function renderLoop(shader) {
 
     // Update Model Matrices
     // Sphere
-    sphereObj.modelMatrix = (new mat4).scale(ui.variables.sphereRadiusX, ui.variables.sphereRadiusY).translate(0.5, -0.5, 0.5);
+    sphereObj.modelMatrix = (new mat4)
+        .scale(ui.variables.sphereRadiusX, ui.variables.sphereRadiusY, ui.variables.sphereRadiusZ)
+        .translate(0.5, 0.0, 0.0)
+        .rotateY(performance.now() / 1000.0)
+        .selfRotateY(-performance.now() / 1000.0)
+        ;
     // Box
-    boxObj.modelMatrix = (new mat4).translate(-0.4, -0.4, -0.3).scale(0.5, 1.2, 0.5);
+    boxObj.modelMatrix = (new mat4).translate(-0.4, -0.4, -0.3).scale(0.5, 1.2, 0.5);//.rotateX(performance.now() / 1000.0);
     // CornellBox
     cornellBoxObj.modelMatrix = (new mat4).scale(2.0, 2.0, 2.0);
 
@@ -208,7 +213,8 @@ function renderLoop(shader) {
         invModelMatrix: { value: boxObj.modelMatrix.inverse(), type: 'mat4' },
     }
     const pointLightData = {
-        position: { value: [0.9 * Math.cos(ui.variables.time), 0.9, 0.9 * Math.sin(ui.variables.time)], type: 'vec3' },
+        // position: { value: [0.0, 0.9, 0.0], type: 'vec3' },
+        position: { value: [0.9 * Math.sin(ui.variables.time), 0.9, 0.9 * Math.cos(ui.variables.time)], type: 'vec3' },
         color: { value: ui.variables.lightColor, type: 'vec3' },
         intensity: { value: ui.variables.lightIntensity, type: 'float' }
     }
