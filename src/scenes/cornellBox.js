@@ -193,12 +193,12 @@ function renderLoop(shader) {
     sphereObj.modelMatrix = (new mat4)
         .selfScale(ui.variables.sphereRadiusX, ui.variables.sphereRadiusY, ui.variables.sphereRadiusZ)
         .selfTranslate(0.5, ui.variables.sphereY, 0.5, true)
-        .selfRotateY(-performance.now() / 1000.0);
+        .selfRotateY(ui.variables.time);
     // Box
     boxObj.modelMatrix = (new mat4)
         .scale(0.5, 1.2, 0.5)
         .translate(-0.4, -0.4, -0.3)
-        .selfRotateY(performance.now() / 1000.0);
+        .selfRotateY(ui.variables.time);
     // CornellBox
     cornellBoxObj.modelMatrix = (new mat4).scale(2.0, 2.0, 2.0);
 
