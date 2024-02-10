@@ -22,7 +22,6 @@ out vec2 vTexCoord;
 out vec3 vNormal;
 
 void main() {
-    gl_InstanceID; // unused
     vPosition = (uModelMatrix * vec4(aPosition, 1.0)).xyz; // World space position
     vTexCoord = aTexCoord;
     vNormal = normalize(uNormalMatrix * aNormal); // World space normal

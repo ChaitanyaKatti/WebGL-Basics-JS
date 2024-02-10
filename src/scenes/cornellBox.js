@@ -71,11 +71,6 @@ ui.rack.addEventListener('mouseout', (event) => {
     document.addEventListener('wheel', myCamera.wheelCameraListener);
 });
 
-// Prevent the user from leaving the page
-window.addEventListener('beforeunload', function (e) {
-    // e.preventDefault();
-    // e.returnValue = '';
-});
 // Handle keydown events, add key to activeKeys
 document.addEventListener('keydown', (event) => {
     // Regex to check if the key is a letter or Shift or Control

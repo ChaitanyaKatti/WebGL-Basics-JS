@@ -17,11 +17,6 @@ uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 uniform mat3 uNormalMatrix;
 
-uniform sampler2D uColorTexture;
-uniform sampler2D uDepthTexture;
-
-uniform bool uSkybox;
-
 out vec3 vPosition;
 out vec2 vTexCoord;
 out vec3 vNormal;

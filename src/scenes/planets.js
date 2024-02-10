@@ -4,6 +4,7 @@ import { vec3, mat3, mat4 } from '../modules/matrix.js';
 import { Mesh, Sphere, Plane } from '../modules/mesh.js';
 import { Texture } from '../modules/texture.js';
 import { UI } from '../modules/ui.js';
+import { Object } from '../modules/object.js';
 
 // Set up canvas and gl variables
 const canvas = createCanvas();
@@ -12,22 +13,32 @@ const canvas = createCanvas();
 const GL = createContext(canvas);
 
 // Camera
-const myCamera = new Camera(60 * Math.PI / 180, window.innerWidth / window.innerHeight, 0.1, 130.0, false);
+const myCamera = new Camera(60 * Math.PI / 180, window.innerWidth / window.innerHeight, 0.1, 130.0, true);
 
 // Create shader program
 const myShader = new Shader(GL, './shaders/phong.vert',
     './shaders/phong.frag');
 
 // Create mesh
-const sphereMesh = new Sphere(GL, 30, 30);// './assets/models/ball.obj');
+const sphereMesh = new Sphere(GL, 50, 50);// './assets/models/ball.obj');
 const planeMesh = new Plane(GL, 1, 1);//, './assets/models/plane.obj');
 
 // Create textures
 const defaultTexture = new Texture(GL, 0);
-const earthTexture = new Texture(GL, 0, './assets/images/textures/earthDay.jpg');
-const moonTexture = new Texture(GL, 0, './assets/images/textures/moon.jpg');
-const sunTexture = new Texture(GL, 0, './assets/images/textures/sun.jpg');
+const earthDiffuseTexture = new Texture(GL, 0, './assets/images/textures/earthDay.jpg');
+const earthSpecularTexture = new Texture(GL, 1, './assets/images/textures/earthSpecular.jpg');
+const moonDiffuseTexture = new Texture(GL, 0, './assets/images/textures/moon.jpg');
+const moonSpecularTexture = new Texture(GL, 1);
+const sunDiffuseTexture = new Texture(GL, 0, './assets/images/textures/sun.jpg');
+const sunSpecularTexture = new Texture(GL, 1);
 const skyBoxTexture = new Texture(GL, 0, './assets/images/textures/milkyway.jpg');
+
+// Create Objects
+const sun = new Object(sphereMesh, [sunDiffuseTexture, sunSpecularTexture], myShader);
+const earth = new Object(sphereMesh, [earthDiffuseTexture, earthSpecularTexture], myShader);
+const moon = new Object(sphereMesh, [moonDiffuseTexture, moonSpecularTexture], myShader);
+const plane = new Object(planeMesh, [defaultTexture], myShader);
+const skyBox = new Object(sphereMesh, [skyBoxTexture], myShader);
 
 // Variables for mouse movement
 let mousePos = [0, 0]; // Mouse position in normalized device coordinates, from -1 to +1
@@ -40,18 +51,19 @@ let frameCount = 0; // Frame count for time uniform
 const ui = new UI();
 // params(variableName, initial_value, min, max, step)
 ui.addSlider('FOV', 60, 0, 180, 1);
-ui.addSlider('timeDialation', 1, 0, 2, 0.01);
+ui.addSlider('timeDialation', 1, 0, 200, 0.01);
 ui.addCheckbox('orbitalCam', myCamera.orbitCam);
 ui.elements['orbitalCam'].input.addEventListener('change', () => {
     myCamera.toggleOrbitCam();
 });
+window.addEventListener('keydown', (event) => {
+    if (event.key == 'v' || event.key == 'V') {
+        myCamera.toggleOrbitCam();
+        ui.elements['orbitalCam'].input.checked = myCamera.orbitCam;
+    }
+});
 ui.addFPSCounter();
 
-// Prevent the user from leaving the page
-window.addEventListener('beforeunload', function (e) {
-    // e.preventDefault();
-    // e.returnValue = '';
-});
 // Handle keydown events, add key to activeKeys
 document.addEventListener('keydown', (event) => {
     // Regex to check if the key is a letter or Shift or Control
@@ -152,58 +164,42 @@ function drawFrame(shader) {
     GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
 
     shader.setUniform('uSkybox', false, 'bool');
+
     GL.bindTexture(GL.TEXTURE_2D, null);
 
-    var modelMatrix;
     // Plane
-    defaultTexture.bind();
-    modelMatrix = mat4.scale(20.0, 1.0, 20.0);
-    modelMatrix = mat4.multiplyMat(mat4.translate(0.0, -2.0, 0.0), modelMatrix);
-    shader.setUniform('uModelMatrix', modelMatrix, 'mat4');
-    shader.setUniform('uNormalMatrix', mat3.modelToNormal(modelMatrix), 'mat3');
-    planeMesh.draw();
+    plane.modelMatrix = (new mat4).scale(20.0, 1.0, 20.0).translate(0.0, -2.0, 0.0);
+    plane.shader.setUniform('uDiffuseTexture', 0, 'int');
+    plane.draw();
 
     // Sun
-    sunTexture.bind();
-    modelMatrix = mat4.identity();
-    // modelMatrix = mat4.scale(1 / 110, 1 / 110, 1 / 110);
-    shader.setUniform('uModelMatrix', modelMatrix, 'mat4');
-    shader.setUniform('uNormalMatrix', mat3.modelToNormal(modelMatrix), 'mat3');
-    // shader.setUniform('uNormalMatrix', mat4.toMat3(modelMatrix), 'mat3');
-    sphereMesh.draw();
+    sun.modelMatrix = (new mat4);
+    sun.shader.setUniform('uDiffuseTexture', 0, 'int');
+    sun.draw();
 
     // Earth
-    earthTexture.bind();
-    modelMatrix = mat4.scale(0.5, 0.5, 0.5);
-    modelMatrix = mat4.multiplyMat(mat4.rotateY(ui.variables.timeDialation * performance.now() / (1000)), modelMatrix);
-    modelMatrix = mat4.multiplyMat(mat4.translate(0, 0, 5), modelMatrix);
-    modelMatrix = mat4.multiplyMat(mat4.rotateY(ui.variables.timeDialation * performance.now() / (365.25 * 1000)), modelMatrix);
-    shader.setUniform('uModelMatrix', modelMatrix, 'mat4');
-    shader.setUniform('uNormalMatrix', mat3.modelToNormal(modelMatrix), 'mat3');
-    sphereMesh.draw();
+    earth.modelMatrix = (new mat4).scale(0.3, 0.28, 0.3)
+        .translate(0, 0, 5)
+        .rotateY(ui.variables.timeDialation * performance.now() / (365.25 * 1000))
+        .selfRotateY(ui.variables.timeDialation * performance.now() / 1000);
+    earth.shader.setUniform('uDiffuseTexture', 0, 'int');
+    earth.shader.setUniform('uSpecularTexture', 1, 'int');
+    earth.draw();
 
     // Moon
-    moonTexture.bind();
-    modelMatrix = mat4.scale(0.2, 0.2, 0.2);
-    modelMatrix = mat4.multiplyMat(mat4.rotateY(ui.variables.timeDialation * performance.now() / (1000)), modelMatrix);
-    modelMatrix = mat4.multiplyMat(mat4.translate(0, 0, 5), modelMatrix);
-    modelMatrix = mat4.multiplyMat(mat4.rotateY(ui.variables.timeDialation * performance.now() / (365.25 * 1000)), modelMatrix);
-    const d = mat4.multiplyVec(modelMatrix, [0, 0, 4, 0]);
-    modelMatrix = mat4.multiplyMat(mat4.translate(d[0], d[1], d[2]), modelMatrix);
-    // modelMatrix = mat4.multiplyMat(mat4.rotateY(Math.PI), modelMatrix);
-    // modelMatrix = mat4.multiplyMat(mat4.rotateY(sliderVariables.timeDialation[0] * performance.now() / (21*1000)), modelMatrix);
-    shader.setUniform('uModelMatrix', modelMatrix, 'mat4');
-    shader.setUniform('uNormalMatrix', mat3.modelToNormal(modelMatrix), 'mat3');
-    sphereMesh.draw();
+    moon.modelMatrix = (new mat4).scale(0.1, 0.1, 0.1)
+        .translate(0, 0, 5)
+        .rotateY(ui.variables.timeDialation * performance.now() / (365.25 * 1000))
+        .selfRotateY(ui.variables.timeDialation * performance.now() / (27.3 * 1000))
+        .selfTranslate(0, 0, 5);
+    moon.shader.setUniform('uDiffuseTexture', 0, 'int');
+    moon.draw();
 
     // Skybox
-    modelMatrix = mat4.scale(100, 100, 100);
-    modelMatrix = mat4.multiplyMat(mat4.translate(myCamera.position[0], myCamera.position[1], myCamera.position[2]), modelMatrix);
-    shader.setUniform('uSkybox', true, 'bool');
-    shader.setUniform('uModelMatrix', modelMatrix, 'mat4');
-    shader.setUniform('uNormalMatrix', mat3.modelToNormal(modelMatrix), 'mat3');
-    skyBoxTexture.bind();
-    sphereMesh.draw();
+    skyBox.modelMatrix = (new mat4).scale(100, 100, 100).translate(myCamera.position[0], myCamera.position[1], myCamera.position[2]);
+    skyBox.shader.setUniform('uSkybox', true, 'bool');
+    skyBox.shader.setUniform('uDiffuseTexture', 0, 'int');
+    skyBox.draw();
 
     GL.flush(); // Flush the buffer
 }

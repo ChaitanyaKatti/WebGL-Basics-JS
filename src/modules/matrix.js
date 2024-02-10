@@ -126,6 +126,22 @@ export class mat3 extends Float32Array {
 
 		return new mat3(out);
 	}
+
+	invert() {
+		// retunr the negative of the matrix
+		// const out = new Float32Array(9);
+		// out[0] = -this[0];
+		// out[1] = -this[1];
+		// out[2] = -this[2];
+		// out[3] = -this[3];
+		// out[4] = -this[4];
+		// out[5] = -this[5];
+		// out[6] = -this[6];
+		// out[7] = -this[7];
+		// out[8] = -this[8];
+		// return new mat3(out);
+		return this.map(x => -x);
+	}
 }
 
 

@@ -54,11 +54,6 @@ uniform vec2 uResolution;
 uniform vec2 uMousePos;
 uniform vec3 uCameraPos;
 
-uniform mat4 uModelMatrix;
-uniform mat4 uViewMatrix;
-uniform mat4 uProjectionMatrix;
-uniform mat3 uNormalMatrix;
-
 uniform bool receiveShadow;
 
 uniform Sphere uSphere;

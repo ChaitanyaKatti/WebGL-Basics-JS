@@ -12,8 +12,8 @@ uniform vec2 uResolution;
 uniform vec2 uMousePos;
 uniform vec3 uCameraPos;
 
-uniform sampler2D uColorTexture;
-uniform sampler2D uDepthTexture;
+uniform sampler2D uDiffuseTexture;
+uniform sampler2D uSpecularTexture;
 
 uniform bool uSkybox;
 
@@ -33,14 +33,14 @@ vec4 contrast(vec4 value, float c) {
 }
 
 void main() {
-    vec4 objectCol = texture(uColorTexture, vTexCoord);
+    vec4 objectCol = texture(uDiffuseTexture, vTexCoord);
     if(uSkybox) {
         fragColor = contrast(objectCol, 20.0);
         return;
     }
 
     // Light
-    Light light = Light(vec3(5.0, 5.0, 5.0), vec3(0.91, 0.95, 0.99), 2.0);
+    Light light = Light(vec3(0.0, 0.0, 0.0), vec3(0.91, 0.95, 0.99), 2.0);
 
     // Ambient
     float ambientStrength = 0.1;
@@ -55,7 +55,7 @@ void main() {
     // Specular
     vec3 viewDir = normalize(uCameraPos - vPosition);
     float spec = pow(max(dot(reflect(-lightDir, normal), viewDir), 0.0), 16.0);
-    vec3 specular = spec * light.color;
+    vec3 specular = spec * light.color * texture(uSpecularTexture, vTexCoord).rgb;
 
     // Attenuation
     float ligthDistance = length(light.position - vPosition);
