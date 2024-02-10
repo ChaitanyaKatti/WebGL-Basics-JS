@@ -10,6 +10,7 @@ export class Object {
     }
 
     draw() {
+        this.shader.use();
         this.textures.map((x) => x.bind())
         this.shader.setUniform('uModelMatrix', this.modelMatrix, 'mat4');
         this.shader.setUniform('uNormalMatrix', this.modelMatrix.modelToNormal(), 'mat3');

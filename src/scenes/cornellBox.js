@@ -17,8 +17,7 @@ const GL = createContext(canvas);
 const myCamera = new Camera(75 * Math.PI / 180, window.innerWidth / window.innerHeight, 0.1, 130.0, true);
 
 // Create shader program
-const myShader = new Shader(GL, './shaders/shadows.vert',
-    './shaders/shadows.frag');
+const myShader = new Shader(GL, './shaders/shadows.vert', './shaders/shadows.frag');
 
 // Create mesh
 const sphereMesh = new Sphere(GL, 100, 100);
@@ -46,7 +45,7 @@ let frameCount = 0; // Frame count for time uniform
 // Create UI
 const ui = new UI();
 ui.addSlider('FOV', 75, 0, 180, 1);
-ui.addSlider('time', 0, 0, 6.3, 0.01);
+ui.addSlider('time', 0.0, 0.0, 6.3, 0.01);
 ui.addSlider('sphereY', -0.5, -1, 1, 0.1);
 ui.addSlider('sphereRadiusX', 0.3, 0.001, 1, 0.01);
 ui.addSlider('sphereRadiusY', 0.3, 0.001, 1, 0.01);
@@ -55,10 +54,16 @@ ui.addColorPicker('ambient', [0.0, 0.0, 0.0]);
 ui.addColorPicker('lightColor', [1.0, 1.0, 1.0]);
 ui.addSlider('lightIntensity', 1.0, 0.0, 10, 0.1);
 ui.addCheckbox('orbitalCam', myCamera.orbitCam);
+ui.addFPSCounter();
 ui.elements['orbitalCam'].input.addEventListener('change', () => {
     myCamera.toggleOrbitCam();
 });
-ui.addFPSCounter();
+window.addEventListener('keydown', (event) => {
+    if (event.key == 'v' || event.key == 'V') {
+        myCamera.toggleOrbitCam();
+        ui.elements['orbitalCam'].input.checked = myCamera.orbitCam;
+    }
+});
 ui.rack.addEventListener('mouseover', (event) => {
     document.removeEventListener('wheel', myCamera.wheelCameraListener);
 });
@@ -155,11 +160,9 @@ function setupPointerLock(canvas) {
     // Handle pointer lock change events, bind mouse movement to updateMouse() when pointer is locked
     document.addEventListener("pointerlockchange", () => {
         if (document.pointerLockElement === canvas) {
-            document.getElementById("crosshair").style.opacity = 0.9;
             document.addEventListener("mousemove", updateMouse);
         }
         else {
-            document.getElementById("crosshair").style.opacity = 0.0;
             document.removeEventListener("mousemove", updateMouse);
             activeKeys = {};
         }
@@ -214,7 +217,6 @@ function renderLoop(shader) {
         invModelMatrix: { value: boxObj.modelMatrix.inverse(), type: 'mat4' },
     }
     const pointLightData = {
-        // position: { value: [0.0, 0.9, 0.0], type: 'vec3' },
         position: { value: [0.9 * Math.sin(ui.variables.time), 0.9, 0.9 * Math.cos(ui.variables.time)], type: 'vec3' },
         color: { value: ui.variables.lightColor, type: 'vec3' },
         intensity: { value: ui.variables.lightIntensity, type: 'float' }
@@ -259,9 +261,6 @@ function renderLoop(shader) {
 function main() {
     // Initialize the shader program
     myShader.init().then(() => {
-        // Use the shader program
-        myShader.use();
-
         GL.enable(GL.DEPTH_TEST); // Enable depth testing
         GL.enable(GL.CULL_FACE); // Cull back facing triangles
 

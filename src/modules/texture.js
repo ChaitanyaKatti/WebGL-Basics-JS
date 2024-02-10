@@ -5,15 +5,13 @@ export class Texture {
         this.index = index;
         this.texture = GL.createTexture();
         this.image = new Image();
-
+        
+        this.loadDefault(); // load default texture first, then load from source if path is provided, because the image.onload function is asynchronous
         if (path) {
             this.image.src = this.path;
             this.image.onload = () => {
                 this.loadFromSource();
             }
-        }
-        else {
-            this.loadDefault();
         }
     }
 

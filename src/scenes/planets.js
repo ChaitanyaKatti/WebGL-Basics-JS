@@ -136,11 +136,9 @@ function setupPointerLock(canvas) {
     // Handle pointer lock change events, bind mouse movement to updateMouse() when pointer is locked
     document.addEventListener("pointerlockchange", () => {
         if (document.pointerLockElement === canvas) {
-            document.getElementById("crosshair").style.opacity = 0.9;
             document.addEventListener("mousemove", updateMouse);
         }
         else {
-            document.getElementById("crosshair").style.opacity = 0.0;
             document.removeEventListener("mousemove", updateMouse);
             activeKeys = {};
         }

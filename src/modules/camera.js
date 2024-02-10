@@ -13,9 +13,7 @@ export class Camera {
         this.yaw = Math.PI; // Looking along -Z axis
         this.pitch = Math.PI / 2; // Viewing perpendicular to Y axis
 
-        this.speed = 0.0;
-        this.normalSpeed = 0.01;
-        this.sprintSpeed = 0.05;
+        this.speed = 0.01;
 
         // Orbit camera variables
         this.orbitCam = orbitCam; // Boolean to toggle between orbit and FPV camera
@@ -46,18 +44,12 @@ export class Camera {
 
     // First person camera
     updateFPV(mousePos, keys) {
-        if (keys["shift"]) {
-            this.speed = this.sprintSpeed;
-        } else {
-            this.speed = this.normalSpeed;
-        }
-        this.roll -= this.roll * 0.005;
-
         this.updateOrientationFPV(mousePos, keys);
         this.updatePositionFPV(mousePos, keys);
         this.updateMatricesFPV();
     }
     updateOrientationFPV(mousePos, keys) {
+        // this.roll -= this.roll * 0.005;
         this.yaw = (1 - mousePos[0]) * Math.PI % (2 * Math.PI); // angle around the Y axis, in ZX plane, zero yaw is facing along Z axis
         this.pitch = (1 + mousePos[1]) * Math.PI / 2; // angle between Y axis and position vector, zero pitch is facing along Y axis
 
@@ -66,6 +58,9 @@ export class Camera {
         }
         else if (keys["e"]) { // Right
             this.roll += 0.01;
+        }
+        else{
+            this.roll -= this.roll * 0.005; // Roll damping to make the camera return to the horizontal position
         }
     }
     updatePositionFPV(mousePos, keys) {
@@ -90,7 +85,7 @@ export class Camera {
         if (keys[" "]) { // Up
             this.position[1] += this.speed;
         }
-        if (keys["control"]) { // Down
+        if (keys["shift"]) { // Down
             this.position[1] -= this.speed;
         }
     }
@@ -102,24 +97,6 @@ export class Camera {
 
     // Orbit camera
     updateOrbitCam(mousePos, keys) {
-        if (keys["shift"]) {
-            this.speed = this.sprintSpeed;
-        } else {
-            this.speed = this.normalSpeed;
-        }
-
-        // if (keys['click']) { // If mouse is clicked
-        //     this.mouseDelta = [this.previousMouseDelta[0] + mousePos[0] - this.lastMousePos[0],
-        //                         this.previousMouseDelta[1] + mousePos[1] - this.lastMousePos[1]];
-        // }
-        // else {
-        //     console.log('reset');
-        //     this.lastMousePos[0] = mousePos[0];
-        //     this.lastMousePos[1] = mousePos[1];
-        //     this.previousMouseDelta[0] = this.mouseDelta[0];
-        //     this.previousMouseDelta[1] = this.mouseDelta[1];
-        // }
-
         this.updateOrientationOrbitCam(mousePos, keys);
         this.updatePositionOrbitCam(mousePos, keys);
         this.updateMatricesOrbitCam();
@@ -152,7 +129,7 @@ export class Camera {
         if (keys[" "]) { // Up
             this.center[1] += this.speed;
         }
-        if (keys["control"]) { // Down
+        if (keys["shift"]) { // Down
             this.center[1] -= this.speed;
         }
 

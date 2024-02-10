@@ -1,12 +1,27 @@
 #version 300 es
-precision mediump float;
+precision highp float;
 
-#define PI 3.1415926535897932384626433832795
+#define PI 3.141592653589793
 
 struct PointLight {
     vec3 position;
     vec3 color;
     float intensity;
+};
+
+struct DirectionalLight {
+    vec3 direction;
+    vec3 color;
+    float intensity;
+};
+
+struct SpotLight {
+    vec3 position;
+    vec3 direction;
+    vec3 color;
+    float intensity;
+    float inneraAngle;
+    float outerAngle;
 };
 
 struct Sphere {

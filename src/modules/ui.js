@@ -9,6 +9,20 @@ export class UI {
         this.rack.className = 'rack';
         document.body.appendChild(this.rack);
 
+        // UI dropdown-arrow
+        this.dropdownArrowDiv = document.createElement('div');
+        this.dropdownArrowDiv.className = 'dropdown-arrow';
+        this.dropdownArrowDivSpan = document.createElement('span');
+        this.dropdownArrowDivSpan.innerHTML = '▲';
+        this.dropdownArrowDiv.appendChild(this.dropdownArrowDivSpan);
+        
+        this.rack.appendChild(this.dropdownArrowDiv);
+        document.body.appendChild(this.dropdownArrowDiv);
+        
+        this.dropdownArrowDiv.addEventListener('click', () => {
+            this.toggeleDropdown();
+        });
+
         // // Make UI draggable
         // this.rack.addEventListener('mousedown', (event) => {
         //     this.uiMouseClick(event);
@@ -20,13 +34,13 @@ export class UI {
         // document.addEventListener('mousemove', (event) => {
         //     this.uiDrag(event);
         // });
-        // Prevent text selection while dragging
+        // // Prevent text selection while dragging
         // document.addEventListener('selectstart', (event) => {
         //     event.preventDefault();
         // });
 
 
-        // When mouse is over the UI, prevent the camera from moving by scrolling
+        // // When mouse is over the UI, prevent the camera from moving by scrolling
 
         // this.rack.addEventListener('mouseover', (event) => {
         //     console.log('mouseover');
@@ -51,6 +65,28 @@ export class UI {
     //         this.rack.style.left = event.clientX - 200 + 'px';
     //     }
     // }
+
+    toggeleDropdown() {
+        if (this.rack.style.display === 'none') {
+            // rack is hidden, show it
+            this.rack.style.display = 'block'; // Ensure shown state
+            this.rack.style.animation = 'openRack 0.7s ease-out forwards';
+            this.dropdownArrowDiv.style.animation = 'openDropdownArrow 0.7s ease-out forwards';
+            this.dropdownArrowDivSpan.style.animation = 'openDropdownArrowSpan 0.7s ease-out forwards';
+            
+            // this.rack.addEventListener('animationend', () => {
+            // }, { once: true });
+        } else {
+            // rack is shown, hide it
+            this.rack.style.animation = 'closeRack 0.7s ease-out forwards';
+            this.dropdownArrowDiv.style.animation = 'closeDropdownArrow 0.7s ease-out forwards';
+            this.dropdownArrowDivSpan.style.animation = 'closeDropdownArrowSpan 0.7s ease-out forwards';
+            
+            this.rack.addEventListener('animationend', () => {
+                this.rack.style.display = 'none'; // Ensure hidden state
+            }, { once: true });
+        }
+    }
 
     addSlider(variableName, value, min, max, step) {
         this.variables[variableName] = value;

@@ -13,10 +13,6 @@ export class Mesh {
         this.vertices = [];
         this.indices = [];
 
-        this.vao = GL.createVertexArray();
-        this.vbo = GL.createBuffer();
-        this.ebo = GL.createBuffer();
-
         if (path) {
             this.parse(); // Parses an obj file and also calls setup()
         }
@@ -120,12 +116,16 @@ export class Mesh {
 
     setup() {
         const GL = this.GL;
+
         // VAO : Vertex Array Object
+        this.vao = GL.createVertexArray();
         GL.bindVertexArray(this.vao);
         // VBO : Vertices
+        this.vbo = GL.createBuffer();
         GL.bindBuffer(GL.ARRAY_BUFFER, this.vbo);
         GL.bufferData(GL.ARRAY_BUFFER, this.vertices, GL.STATIC_DRAW);
         // EBO : Indices
+        this.ebo = GL.createBuffer();
         GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, this.ebo);
         GL.bufferData(GL.ELEMENT_ARRAY_BUFFER, this.indices, GL.STATIC_DRAW);
         // Position
@@ -143,16 +143,12 @@ export class Mesh {
 
     draw() {
         const GL = this.GL;
-        // shader.use();
-        // GL.activeTexture(GL.TEXTURE0);
-        // GL.uniform1i(GL.getUniformLocation(shader.program, "uTexture"), 0);
-        // GL.bindTexture(GL.TEXTURE_2D, this.texture);
 
         // Bind the vertex array object
         GL.bindVertexArray(this.vao);
         // Bind the element buffer object
         GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, this.ebo);
-        // Draw the trianGLes
+        // Draw the triangLes
         GL.drawElements(GL.TRIANGLES, this.indices.length, GL.UNSIGNED_INT, 0);
         // GL.drawElements(GL.TRIANGLES, this.indices.length, GL.UNSIGNED_SHORT, 0);
         GL.bindVertexArray(null);
